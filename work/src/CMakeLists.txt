@@ -6,17 +6,19 @@
 # TODO list your header files (.hpp) here
 SET(headers
 	"comp308.hpp"
-	"Display.h"
+	"display.hpp"
 	"imageLoader.hpp"
 	"shaderLoader.hpp"
-	"physics.hpp")
+	"physics.hpp"
+	"cut.hpp")
 
 
 # TODO list your source files (.cpp) here
 SET(sources
 	"main.cpp"
-	"Display.cpp"
-	"physics.cpp")
+	"display.cpp"
+	"physics.cpp"
+	"cut.cpp")
 
 # Add executable target and link libraries
 # You do not need to touch this
