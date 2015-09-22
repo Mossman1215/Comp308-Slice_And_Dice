@@ -17,7 +17,7 @@
 #include <iostream>
 #include <string>
 #include "comp308.hpp"
-#include "Display.h"
+#include "display.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -46,7 +46,7 @@ float g_xRotation = 0;
 float g_zoomFactor = 1.0;
 
 
-Display *g_display = nullptr;
+display *g_display = nullptr;
 
 // Sets up where and what the light is
 // Called once on start up
@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	g_display = new Display();
+	g_display = new display();
 
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish

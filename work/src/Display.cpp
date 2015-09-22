@@ -6,14 +6,14 @@
 #include <stdexcept>
 
 #include "comp308.hpp"
-#include "Display.h"
+#include "display.hpp"
 
 using namespace std;
 using namespace comp308;
 
-Display::Display(){}
+display::display(){}
 
-void Display::draw() {
+void display::draw() {
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
@@ -33,9 +33,9 @@ void Display::draw() {
 
 }
 
-void Display::render() {
+void display::render() {
 	glColor3f(0, 1, 1);
 	glutSolidTeapot(0.2);
 }
 
-Display::~Display(){}
+display::~display(){}
