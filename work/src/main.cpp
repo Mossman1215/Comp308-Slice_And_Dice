@@ -34,7 +34,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 1000.0;
+float g_zfar = 1000;
 
 
 // Mouse controlled Camera values
@@ -124,23 +124,27 @@ void draw() {
 	// Render geometry
 	g_display->draw();
 
+
+	glColor3f(1, 1, 1);
+	glBegin(GL_QUADS);
+	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
+	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
+	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
+	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glEnd();
+
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, g_winWidth, 0, g_winHeight, 0, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glColor3f(1, 1, 1);
+	glColor3f(1, 0, 0);
 	glBegin(GL_LINES);
 	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
+	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glEnd();
 
 	glutSwapBuffers();
@@ -151,7 +155,7 @@ void draw() {
 
 
 
-vec3 myUnProject(int x, int y) {
+vec3 myUnProject(int x, int y, int z) {
 	glLoadIdentity();
 
 	GLint viewport[4];
@@ -159,6 +163,7 @@ vec3 myUnProject(int x, int y) {
 	GLdouble projection[16];
 	GLfloat winX, winY, winZ;
 	GLdouble resX, resY, resZ;
+	setUpCamera();
 
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
@@ -167,12 +172,11 @@ vec3 myUnProject(int x, int y) {
 
 	winX = (float)x;
 	winY = (float)viewport[3] - (float)y;
-	glReadPixels(x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
-	winZ = 1;
+	winZ = z;
 
 	gluUnProject(winX, winY, winZ, modelView, projection, viewport, &resX, &resY, &resZ);
 
-	return vec3(resX, resY, resZ) / (1 /* far distance/camera distance */);
+	return vec3(resX, resY, resZ);
 }
 
 
@@ -226,11 +230,16 @@ void mouseCallback(int button, int state, int x, int y) {
 		case 0: //left mouse button
 			g_drawMouse = (state==0);
 			if (g_drawMouse) {
-				cut_draw_1 = vec3(x, g_winHeight - y, 0);
-				cut_draw_2 = vec3(x, g_winHeight - y, 0);
+				cut_draw_1 = myUnProject(x, y, 0);
+				cut_proj_1 = myUnProject(x, y, 1);
+				cut_draw_2 = myUnProject(x, y, 0);
+				cut_proj_2 = myUnProject(x, y, 1);
 			}
 			if (!g_drawMouse) {
-				cut_draw_2 = vec3(x, g_winHeight - y, 0);
+				cut_draw_2 = myUnProject(x, y, 0);
+				cut_proj_2 = myUnProject(x, y, 1);
+				cout << cut_draw_1 << cut_draw_2 << endl;
+				cout << cut_proj_1 << cut_proj_2 << endl;
 			}
 			break;
 
@@ -263,7 +272,8 @@ void mouseCallback(int button, int state, int x, int y) {
 void mouseMotionCallback(int x, int y) {
 	//cout << "Mouse Motion Callback :: (" << x << "," << y << ")" << endl;
 	if (g_drawMouse) {
-		cut_draw_2 = vec3(x, g_winHeight - y, 0);
+		cut_draw_2 = myUnProject(x, y, 0);
+		cut_proj_2 = myUnProject(x, y, 1);
 	}
 	if (g_mouseDown) {
 		vec2 dif = vec2(x, y) - g_mousePos;
