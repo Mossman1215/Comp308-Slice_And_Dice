@@ -43,7 +43,14 @@ bool g_mouseDown = false;
 vec2 g_mousePos;
 float g_yRotation = 0;
 float g_xRotation = 0;
+float g_yPosition = 0;
 float g_zoomFactor = 1.0;
+
+// Mouse controlled drawing values
+//
+bool g_drawMouse = false;
+vec2 cut_draw_1;
+vec2 cut_draw_2;
 
 
 display *g_display = nullptr;
@@ -80,7 +87,7 @@ void setUpCamera() {
 	glLoadIdentity();
 
 	// Load camera transforms
-	glTranslatef(0, 0, -5 * g_zoomFactor);
+	glTranslatef(0, g_yPosition, -5 * g_zoomFactor);
 	glRotatef(g_xRotation, 1, 0, 0);
 	glRotatef(g_yRotation, 0, 1, 0);
 }
@@ -118,10 +125,49 @@ void draw() {
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, g_winWidth, 0, g_winHeight, 0, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glColor3f(1, 1, 1);
+	glBegin(GL_LINES);
+	glVertex2f(cut_draw_1.x, cut_draw_1.y);
+	glVertex2f(cut_draw_2.x, cut_draw_2.y);
+	glEnd();
+
 	glutSwapBuffers();
 
 	// Queue the next frame to be drawn straight away
 	glutPostRedisplay();
+}
+
+
+
+vec3 myUnProject(int x, int y) {
+	glLoadIdentity();
+
+	GLint viewport[4];
+	GLdouble modelView[16];
+	GLdouble projection[16];
+	GLfloat winX, winY, winZ;
+	GLdouble resX, resY, resZ;
+
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+
+	winX = (float)x;
+	winY = (float)viewport[3] - (float)y;
+	glReadPixels(x, int(winY), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
+	winZ = 1;
+
+	gluUnProject(winX, winY, winZ, modelView, projection, viewport, &resX, &resY, &resZ);
+
+	return vec3(resX, resY, resZ) / (1 /* far distance/camera distance */);
 }
 
 
@@ -141,7 +187,16 @@ void reshape(int w, int h) {
 // Called once per button state change
 //
 void keyboardCallback(unsigned char key, int x, int y) {
-
+	if (key == GLUT_KEY_RIGHT || key == 'a') {
+		g_yRotation += 5;
+	} else if (key == GLUT_KEY_LEFT || key == 'd') {
+		g_yRotation -= 5;
+	}else if (key == GLUT_KEY_UP || key == 'w') {
+		g_yPosition += 0.03;
+	}else if (key == GLUT_KEY_DOWN || key == 's') {
+		g_yPosition -= 0.03;
+	}
+	cout << key << " " << g_yRotation << endl;
 }
 
 
@@ -164,11 +219,26 @@ void mouseCallback(int button, int state, int x, int y) {
 	switch(button){
 
 		case 0: //left mouse button
-			g_mouseDown = (state==0);
+			g_drawMouse = (state==0);
+			if (g_drawMouse) {
+				cut_draw_1 = vec2(x, g_winHeight - y);
+				cut_draw_2 = vec2(x, g_winHeight - y);
+			}
+			if (!g_drawMouse) {
+				cut_draw_2 = vec2(x, g_winHeight - y);
+			}
+			break;
+
+		case 1:
+			g_zoomFactor = 1;
+			g_yPosition = 0;
+			g_yRotation = 0;
+			g_xRotation = 0;
 			break;
 
 		case 2:
 			g_mouseDown = (state == 0);
+			g_mousePos = vec2(x, y);
 			break;
 
 		case 3: //scroll foward/up
@@ -187,9 +257,12 @@ void mouseCallback(int button, int state, int x, int y) {
 // at least one mouse button has an active state
 void mouseMotionCallback(int x, int y) {
 	//cout << "Mouse Motion Callback :: (" << x << "," << y << ")" << endl;
+	if (g_drawMouse) {
+		cut_draw_2 = vec2(x, g_winHeight - y);
+	}
 	if (g_mouseDown) {
-		vec2 dif = vec2(x,y) - g_mousePos;
-		g_mousePos = vec2(x,y);
+		vec2 dif = vec2(x, y) - g_mousePos;
+		g_mousePos = vec2(x, y);
 		g_yRotation += 0.3 * dif.x;
 		g_xRotation += 0.3 * dif.y;
 	}
@@ -232,6 +305,8 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseCallback);
 	glutMotionFunc(mouseMotionCallback);
 
+	cut_draw_1 = vec2(0, 0);
+	cut_draw_2 = vec2(500, 500);
 
 
 	// Create a light on the camera
