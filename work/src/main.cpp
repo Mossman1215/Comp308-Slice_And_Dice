@@ -49,8 +49,13 @@ float g_zoomFactor = 1.0;
 // Mouse controlled drawing values
 //
 bool g_drawMouse = false;
-vec2 cut_draw_1;
-vec2 cut_draw_2;
+vec3 cut_draw_1;
+vec3 cut_draw_2;
+
+// For cutting in three dimensions.
+//
+vec3 cut_proj_1;
+vec3 cut_proj_2;
 
 
 display *g_display = nullptr;
@@ -134,8 +139,8 @@ void draw() {
 
 	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);
-	glVertex2f(cut_draw_1.x, cut_draw_1.y);
-	glVertex2f(cut_draw_2.x, cut_draw_2.y);
+	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
+	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
 
 	glutSwapBuffers();
@@ -221,11 +226,11 @@ void mouseCallback(int button, int state, int x, int y) {
 		case 0: //left mouse button
 			g_drawMouse = (state==0);
 			if (g_drawMouse) {
-				cut_draw_1 = vec2(x, g_winHeight - y);
-				cut_draw_2 = vec2(x, g_winHeight - y);
+				cut_draw_1 = vec3(x, g_winHeight - y, 0);
+				cut_draw_2 = vec3(x, g_winHeight - y, 0);
 			}
 			if (!g_drawMouse) {
-				cut_draw_2 = vec2(x, g_winHeight - y);
+				cut_draw_2 = vec3(x, g_winHeight - y, 0);
 			}
 			break;
 
@@ -258,7 +263,7 @@ void mouseCallback(int button, int state, int x, int y) {
 void mouseMotionCallback(int x, int y) {
 	//cout << "Mouse Motion Callback :: (" << x << "," << y << ")" << endl;
 	if (g_drawMouse) {
-		cut_draw_2 = vec2(x, g_winHeight - y);
+		cut_draw_2 = vec3(x, g_winHeight - y, 0);
 	}
 	if (g_mouseDown) {
 		vec2 dif = vec2(x, y) - g_mousePos;
@@ -305,8 +310,8 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseCallback);
 	glutMotionFunc(mouseMotionCallback);
 
-	cut_draw_1 = vec2(0, 0);
-	cut_draw_2 = vec2(500, 500);
+	cut_draw_1 = vec3(-1, -1, 0);
+	cut_draw_2 = vec3(-1, -1, 0);
 
 
 	// Create a light on the camera
