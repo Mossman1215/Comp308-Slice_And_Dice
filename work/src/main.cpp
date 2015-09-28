@@ -19,6 +19,8 @@
 #include "comp308.hpp"
 #include "display.hpp"
 #include "physics.hpp"
+#include "cut.hpp"
+
 using namespace std;
 using namespace comp308;
 
@@ -59,6 +61,7 @@ vec3 cut_proj_2;
 int g_start_time=0;
 float g_delta=0;
 display *g_display = nullptr;
+cut *g_cut = nullptr;
 Rigidbody* box;
 bool g_paused = false;
 // Sets up where and what the light is
@@ -146,6 +149,15 @@ void draw() {
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
 	glDisable(GL_BLEND);
+
+	//render cut
+	vector<vec3> plane;
+	plane.push_back(cut_proj_1);
+	plane.push_back(cut_proj_2);
+	plane.push_back(cut_draw_2);
+
+	g_cut->createCut(plane);
+	//g_cut->draw();
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
@@ -346,6 +358,7 @@ int main(int argc, char **argv) {
 
 	// Finally create our geometry
 	g_display = new display();
+	g_cut = new cut();
 	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
 	box->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL

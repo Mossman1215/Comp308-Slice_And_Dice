@@ -35,7 +35,18 @@ void display::draw() {
 
 void display::render() {
 	glColor3f(0, 1, 1);
-	glutSolidTeapot(0.2);
+	//glutSolidTeapot(0.2);
+
+	glBegin(GL_TRIANGLES);
+	glNormal3f(0.0, 0.0, 1.0);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(-5.0, -5.0, 0.0);
+	glTexCoord2f(0.0, 1.0);
+	glVertex3f(-5.0, 5.0, 0.0);
+	glTexCoord2f(1.0, 1.0);
+	glVertex3f(5.0, 5.0, 0.0);
+	glEnd();
+	glFlush();
 }
 
 display::~display(){}
