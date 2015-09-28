@@ -8,12 +8,12 @@
 #include <vector>
 #include "comp308.hpp"
 
-class Display
+class display
 {
 public:
-	Display();
+	display();
 	void draw();
 	void render();
-	virtual ~Display();
+	virtual ~display();
 };
 

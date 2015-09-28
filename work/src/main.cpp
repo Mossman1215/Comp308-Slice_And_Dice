@@ -17,7 +17,7 @@
 #include <iostream>
 #include <string>
 #include "comp308.hpp"
-#include "Display.h"
+#include "display.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -34,7 +34,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 1000.0;
+float g_zfar = 1000;
 
 
 // Mouse controlled Camera values
@@ -43,10 +43,22 @@ bool g_mouseDown = false;
 vec2 g_mousePos;
 float g_yRotation = 0;
 float g_xRotation = 0;
+float g_yPosition = 0;
 float g_zoomFactor = 1.0;
 
+// Mouse controlled drawing values
+//
+bool g_drawMouse = false;
+vec3 cut_draw_1;
+vec3 cut_draw_2;
 
-Display *g_display = nullptr;
+// For cutting in three dimensions.
+//
+vec3 cut_proj_1;
+vec3 cut_proj_2;
+
+
+display *g_display = nullptr;
 
 // Sets up where and what the light is
 // Called once on start up
@@ -80,7 +92,7 @@ void setUpCamera() {
 	glLoadIdentity();
 
 	// Load camera transforms
-	glTranslatef(0, 0, -5 * g_zoomFactor);
+	glTranslatef(0, g_yPosition, -5 * g_zoomFactor);
 	glRotatef(g_xRotation, 1, 0, 0);
 	glRotatef(g_yRotation, 0, 1, 0);
 }
@@ -112,16 +124,59 @@ void draw() {
 	// Render geometry
 	g_display->draw();
 
+
+	glColor3f(1, 1, 1);
+	glBegin(GL_QUADS);
+	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
+	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
+	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
+	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glEnd();
+
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
+	glColor3f(1, 0, 0);
+	glBegin(GL_LINES);
+	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
+	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
+	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
+	glEnd();
+
 	glutSwapBuffers();
 
 	// Queue the next frame to be drawn straight away
 	glutPostRedisplay();
+}
+
+
+
+vec3 myUnProject(int x, int y, int z) {
+	glLoadIdentity();
+
+	GLint viewport[4];
+	GLdouble modelView[16];
+	GLdouble projection[16];
+	GLfloat winX, winY, winZ;
+	GLdouble resX, resY, resZ;
+	setUpCamera();
+
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+
+	winX = (float)x;
+	winY = (float)viewport[3] - (float)y;
+	winZ = z;
+
+	gluUnProject(winX, winY, winZ, modelView, projection, viewport, &resX, &resY, &resZ);
+
+	return vec3(resX, resY, resZ);
 }
 
 
@@ -141,7 +196,16 @@ void reshape(int w, int h) {
 // Called once per button state change
 //
 void keyboardCallback(unsigned char key, int x, int y) {
-
+	if (key == GLUT_KEY_RIGHT || key == 'a') {
+		g_yRotation += 5;
+	} else if (key == GLUT_KEY_LEFT || key == 'd') {
+		g_yRotation -= 5;
+	}else if (key == GLUT_KEY_UP || key == 'w') {
+		g_yPosition += 0.03;
+	}else if (key == GLUT_KEY_DOWN || key == 's') {
+		g_yPosition -= 0.03;
+	}
+	cout << key << " " << g_yRotation << endl;
 }
 
 
@@ -164,11 +228,31 @@ void mouseCallback(int button, int state, int x, int y) {
 	switch(button){
 
 		case 0: //left mouse button
-			g_mouseDown = (state==0);
+			g_drawMouse = (state==0);
+			if (g_drawMouse) {
+				cut_draw_1 = myUnProject(x, y, 0);
+				cut_proj_1 = myUnProject(x, y, 1);
+				cut_draw_2 = myUnProject(x, y, 0);
+				cut_proj_2 = myUnProject(x, y, 1);
+			}
+			if (!g_drawMouse) {
+				cut_draw_2 = myUnProject(x, y, 0);
+				cut_proj_2 = myUnProject(x, y, 1);
+				cout << cut_draw_1 << cut_draw_2 << endl;
+				cout << cut_proj_1 << cut_proj_2 << endl;
+			}
+			break;
+
+		case 1:
+			g_zoomFactor = 1;
+			g_yPosition = 0;
+			g_yRotation = 0;
+			g_xRotation = 0;
 			break;
 
 		case 2:
 			g_mouseDown = (state == 0);
+			g_mousePos = vec2(x, y);
 			break;
 
 		case 3: //scroll foward/up
@@ -187,9 +271,13 @@ void mouseCallback(int button, int state, int x, int y) {
 // at least one mouse button has an active state
 void mouseMotionCallback(int x, int y) {
 	//cout << "Mouse Motion Callback :: (" << x << "," << y << ")" << endl;
+	if (g_drawMouse) {
+		cut_draw_2 = myUnProject(x, y, 0);
+		cut_proj_2 = myUnProject(x, y, 1);
+	}
 	if (g_mouseDown) {
-		vec2 dif = vec2(x,y) - g_mousePos;
-		g_mousePos = vec2(x,y);
+		vec2 dif = vec2(x, y) - g_mousePos;
+		g_mousePos = vec2(x, y);
 		g_yRotation += 0.3 * dif.x;
 		g_xRotation += 0.3 * dif.y;
 	}
@@ -232,13 +320,15 @@ int main(int argc, char **argv) {
 	glutMouseFunc(mouseCallback);
 	glutMotionFunc(mouseMotionCallback);
 
+	cut_draw_1 = vec3(-1, -1, 0);
+	cut_draw_2 = vec3(-1, -1, 0);
 
 
 	// Create a light on the camera
 	initLight();
 
 	// Finally create our geometry
-	g_display = new Display();
+	g_display = new display();
 
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
