@@ -16,7 +16,7 @@ SET(headers
 # TODO list your source files (.cpp) here
 SET(sources
 	"main.cpp"
-	"display.cpp"
+	"Display.cpp"
 	"physics.cpp"
 	"cut.cpp")
 

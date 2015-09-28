@@ -18,7 +18,7 @@
 #include <string>
 #include "comp308.hpp"
 #include "display.hpp"
-
+#include "physics.hpp"
 using namespace std;
 using namespace comp308;
 
@@ -56,10 +56,11 @@ vec3 cut_draw_2;
 //
 vec3 cut_proj_1;
 vec3 cut_proj_2;
-
-
+int g_start_time=0;
+float g_delta=0;
 display *g_display = nullptr;
-
+Rigidbody* box;
+bool g_paused = false;
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -101,7 +102,11 @@ void setUpCamera() {
 // Draw function
 //
 void draw() {
-
+	g_delta = (glutGet(GLUT_ELAPSED_TIME) - g_start_time) /1000.0f;
+	g_start_time = glutGet(GLUT_ELAPSED_TIME);
+	if(g_paused){
+		g_delta = 0;
+	}
 	// Set up camera every frame
 	setUpCamera();
 
@@ -123,7 +128,11 @@ void draw() {
 
 	// Render geometry
 	g_display->draw();
-
+	glPushMatrix();
+	    vec3 position = box->update(g_delta);
+	    glTranslatef(position.x,position.y,position.z);
+	    glutSolidCube(1);
+	glPopMatrix();
 
 	glColor3f(1, 1, 1);
 	glBegin(GL_QUADS);
@@ -151,6 +160,7 @@ void draw() {
 
 	// Queue the next frame to be drawn straight away
 	glutPostRedisplay();
+	g_delta =(float)((glutGet(GLUT_ELAPSED_TIME) - g_start_time)/1000);
 }
 
 
@@ -206,6 +216,9 @@ void keyboardCallback(unsigned char key, int x, int y) {
 		g_yPosition -= 0.03;
 	}
 	cout << key << " " << g_yRotation << endl;
+	if(key ==' '){
+		g_paused= !g_paused;
+	}
 }
 
 
@@ -329,7 +342,8 @@ int main(int argc, char **argv) {
 
 	// Finally create our geometry
 	g_display = new display();
-
+	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
+	box->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();
