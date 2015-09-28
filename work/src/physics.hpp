@@ -1,10 +1,15 @@
 #include "comp308.hpp"
 #include <vector>
 
+
 class Rigidbody{
 public:
   void update(unsigned float);
   void rollBack(unsigned float);
+  Rigidbody(comp308::vec3 base,vector<vec3> mesh){
+    /*set inertia tensor based on mesh data*/
+    position = base;
+  };
 private:
   double mass;
   comp308::mat3 inertiaTensor;
@@ -18,9 +23,9 @@ private:
 };
 class Physics{
 public:
-  Rigidbody createRigidbody();
-  void update(unsigned float);
-  void rollBack(unsigned float);
+  void createRigidbody(comp308::vec3 position);
+  vector<vec3> update(unsigned float);
+  vector<vec3> rollBack(unsigned float);
 private:
   unsigned float currentTime;
   std::vector<Rigidbody> objects;
