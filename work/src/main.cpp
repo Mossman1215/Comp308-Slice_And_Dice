@@ -134,17 +134,20 @@ void draw() {
 	    glutSolidCube(1);
 	glPopMatrix();
 
-	glColor3f(1, 1, 1);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColor4f(1, 1, 1, 0.5);
+
 	glBegin(GL_QUADS);
 	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
 	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
+	glDisable(GL_BLEND);
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
