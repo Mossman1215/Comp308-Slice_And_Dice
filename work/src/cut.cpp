@@ -94,7 +94,13 @@ be positive or negative respective of what side it lies on.
 */
 int cut::isInFront(vec3 vertex) {
 	vec3 normal = findNormal();
-	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z));
+	float d = calculateDisplacement(normal);
+	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
+}
+
+float cut::calculateDisplacement(vec3 normal) {
+	float d = (normal.x*cutPlane[0].x*-1) - (normal.y*cutPlane[0].y) - (normal.z*cutPlane[0].z);
+	return d;
 }
 
 /*
