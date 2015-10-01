@@ -40,11 +40,11 @@ void display::render() {
 	glBegin(GL_TRIANGLES);
 	glNormal3f(0.0, 0.0, 1.0);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(-5.0, -5.0, 0.0);
+	glVertex3f(-5.0, -5.0, 5.0);
 	glTexCoord2f(0.0, 1.0);
-	glVertex3f(-5.0, 5.0, 0.0);
+	glVertex3f(-5.0, 5.0, -2.5);
 	glTexCoord2f(1.0, 1.0);
-	glVertex3f(5.0, 5.0, 0.0);
+	glVertex3f(5.0, 5.0, -5.0);
 	glEnd();
 	glFlush();
 }
