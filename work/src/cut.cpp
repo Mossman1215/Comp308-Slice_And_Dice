@@ -30,6 +30,8 @@ using namespace std;
 using namespace comp308;
 
 vector<vec3> cutPlane;
+vec3 normal;
+float planeDisplacement;
 
 cut::cut() {}
 
@@ -50,6 +52,7 @@ void cut::createCut(vector<vec3> plane) {
 	vector<vec3> polygons1;
 	vector<vec3> polygons2;
 
+	//Separate the vertices.
 	for (vec3 vertex : vertices) {
 		glPushMatrix();
 		glTranslatef(vertex.x, vertex.y, vertex.z);
@@ -65,6 +68,7 @@ void cut::createCut(vector<vec3> plane) {
 		glPopMatrix();
 	}
 	
+	//Calculate the intersection.
 	if (polygons1.size() > 0 && polygons2.size() > 0) {
 		if (polygons1.size() > polygons2.size()) {
 			calculateIntersection(polygons2, polygons1);
@@ -76,30 +80,31 @@ void cut::createCut(vector<vec3> plane) {
 }
 
 /*
-Need to calculate the normal of the plane in order to find the equation of it. Normal is done through the cross product.
+Calculates the normal of the plane.
 */
 vec3 cut::findNormal() {
 	vec3 edge1 = cutPlane[0] - cutPlane[1];
 	vec3 edge2 = cutPlane[2] - cutPlane[1];
 
 	vec3 n = cross(edge1, edge2);
+	normal = n;
 	return n;
 }
 
 /*
-Need to find whether the given vertex is behind or in front of plane.
-
-equation of plane is: Ax+By+Cz+D=0 plug in a point not lying on the plane for x,y and z and the result should 
-be positive or negative respective of what side it lies on.
+Returns whether or not the given point is in front or behind the plane.
 */
 int cut::isInFront(vec3 vertex) {
 	vec3 normal = findNormal();
 	float d = calculateDisplacement(normal);
 	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
 }
-
+/*
+Calculates the displacement of the plane (the 'd' in ax + by + cz + d = 0).
+*/
 float cut::calculateDisplacement(vec3 normal) {
 	float d = (normal.x*cutPlane[0].x*-1) - (normal.y*cutPlane[0].y) - (normal.z*cutPlane[0].z);
+	planeDisplacement = d;
 	return d;
 }
 
@@ -123,17 +128,16 @@ void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	vec3 vector2Unit = vector2 * (1 / vector2Magntde);
 
 	//The two lines
-	int t = 1;
-	vec3 line1 = getLine(v1[0], vector1Unit, t);
-	vec3 line2 = getLine(v1[0], vector2Unit, t);
-	//Handle the offset created from adding the unit vector.
-	line1 = line1 - vector1Unit;
-	line2 = line2 - vector2Unit;
+	vec3 line1 = getLine(v1[0], vector1Unit, 0);
+	vec3 line2 = getLine(v1[0], vector2Unit, 0);
 
-	t = vector1Magntde;
+	//The scaler t for the intersection.
+	float t = getLineDisplacement(v1[0], vector1Unit);
+	float t2 = getLineDisplacement(v1[0], vector2Unit);
+
+	//Substituting t in for the equation of the line.
 	vec3 line3 = getLine(v1[0], vector1Unit, t);
-	t = vector2Magntde;
-	vec3 line4 = getLine(v1[0], vector2Unit, t);
+	vec3 line4 = getLine(v1[0], vector2Unit, t2);
 
 	glColor3f(1, 0, 0);
 	glLineWidth(2);
@@ -145,11 +149,22 @@ void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	glEnd();
 }
 
+/*
+Helper method for generating a line given a point, direction and length.
+*/
 vec3 cut::getLine(vec3 position, vec3 direction, int length) {
 	vec3 line(position.x + (direction.x * length), position.y + (direction.y * length), position.z + (direction.z * length));
 	return line;
 }
 
-void cut::draw() {
-	
+/*
+Helper method for determining how far along the given line the intersection is.
+*/
+float cut::getLineDisplacement(vec3 position, vec3 direction) {
+	cout << "Plane d: ";
+	cout << planeDisplacement << endl;
+	float t = (planeDisplacement - (normal.x*position.x) - (normal.y*position.y) - (normal.z*position.z)) / ((normal.x*direction.x) + (normal.y*direction.y) + (normal.z*direction.z));
+	cout << "t: ";
+	cout << t << endl;
+	return t;
 }
