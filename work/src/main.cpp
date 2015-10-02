@@ -130,7 +130,7 @@ void draw() {
 
 
 	// Render geometry
-	g_display->draw();
+	//g_display->draw();
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
@@ -150,11 +150,6 @@ void draw() {
 	glEnd();
 	glDisable(GL_BLEND);
 
-	cout << cut_draw_1 << endl;
-	cout << cut_proj_1 << endl;
-	cout << cut_proj_2 << endl;
-	cout << cut_draw_2 << endl;
-
 	//render cut
 	vector<vec3> plane;
 	plane.push_back(cut_proj_1);
@@ -162,7 +157,6 @@ void draw() {
 	plane.push_back(cut_draw_2);
 
 	g_cut->createCut(plane);
-	//g_cut->draw();
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);

@@ -31,7 +31,6 @@ using namespace comp308;
 
 vector<vec3> cutPlane;
 vec3 normal;
-float planeDisplacement;
 
 cut::cut() {}
 
@@ -47,36 +46,46 @@ void cut::createCut(vector<vec3> plane) {
 	vertices.push_back(v1);
 	vertices.push_back(v2);
 	vertices.push_back(v3);
+
 	cutPlane = plane;
 	
-	vector<vec3> polygons1;
-	vector<vec3> polygons2;
+	vector<vec3> frontVertices;
+	vector<vec3> backVertices;
 
 	//Separate the vertices.
 	for (vec3 vertex : vertices) {
 		glPushMatrix();
 		glTranslatef(vertex.x, vertex.y, vertex.z);
 		if (isInFront(vertex) > 0) {
-			glColor3f(1, 0, 0);
-			polygons1.push_back(vertex);
+			//glColor3f(1, 0, 0);
+			frontVertices.push_back(vertex);
 		}
 		else {
-			glColor3f(0, 1, 0);
-			polygons2.push_back(vertex);
+			//glColor3f(0, 1, 0);
+			backVertices.push_back(vertex);
 		}
-		glutSolidSphere(0.5, 100, 100);
+		//glutSolidSphere(0.5, 100, 100);
 		glPopMatrix();
 	}
-	
+
 	//Calculate the intersection.
-	if (polygons1.size() > 0 && polygons2.size() > 0) {
-		if (polygons1.size() > polygons2.size()) {
-			calculateIntersection(polygons2, polygons1);
+	if (frontVertices.size() > 0 && backVertices.size() > 0) {
+		if (frontVertices.size() > backVertices.size()) {
+			vertices = calculateIntersection(backVertices, frontVertices);
 		}
 		else {
-			calculateIntersection(polygons1, polygons2);
+			vertices = calculateIntersection(frontVertices, backVertices);
 		}
 	}
+
+	//Add the new vertices to the old ones
+	for (vec3 vertex : vertices) {
+		frontVertices.push_back(vertex);
+		backVertices.push_back(vertex);
+	}
+
+	//Actually cut it.
+	cutTriangle(frontVertices, backVertices);
 }
 
 /*
@@ -96,9 +105,7 @@ Returns whether or not the given point is in front or behind the plane.
 */
 int cut::isInFront(vec3 vertex) {
 	vec3 normal = findNormal();
-	cout << "D: ";
 	float d = calculateDisplacement(normal);
-	cout << d << endl;
 	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
 }
 /*
@@ -106,7 +113,6 @@ Calculates the displacement of the plane (the 'd' in ax + by + cz + d = 0).
 */
 float cut::calculateDisplacement(vec3 normal) {
 	float d = (normal.x*cutPlane[0].x*-1) - (normal.y*cutPlane[0].y) - (normal.z*cutPlane[0].z);
-	planeDisplacement = d;
 	return d;
 }
 
@@ -116,7 +122,7 @@ Calculates the lines from these vectors and given vertices.
 Calculates the intersection of those lines with the plane and finally
 connects the two intersections to form the cut line.
 */
-void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
+vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	//The two vectors
 	vec3 vector1 = v2[0] - v1[0];
 	vec3 vector2 = v2[1] - v1[0];
@@ -137,18 +143,121 @@ void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	float t = getLineDisplacement(v1[0], vector1Unit);
 	float t2 = getLineDisplacement(v1[0], vector2Unit);
 
-	//Substituting t in for the equation of the line.
-	vec3 line3 = getLine(v1[0], vector1Unit, t);
-	vec3 line4 = getLine(v1[0], vector2Unit, t2);
+	//The vertices at the intersection point
+	vec3 intersectVertex = getLine(v1[0], vector1Unit, t);
+	vec3 intersectVertex2 = getLine(v1[0], vector2Unit, t2);
 
-	glColor3f(1, 1, 0);
-	glLineWidth(8);
+	glColor3f(1, 0, 0);
+	glLineWidth(4);
 	glBegin(GL_LINES);
-	glVertex3f(line1.x, line1.y, line1.z);
-	glVertex3f(line3.x, line3.y, line3.z);
-	glVertex3f(line2.x, line2.y, line2.z);
-	glVertex3f(line4.x, line4.y, line4.z);
+	glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
+	glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
 	glEnd();
+
+	vector<vec3> vertices;
+	vertices.push_back(intersectVertex);
+	vertices.push_back(intersectVertex2);
+
+	return vertices;
+
+	//glColor3f(1, 1, 0);
+	//glLineWidth(8);
+	//glBegin(GL_LINES);
+	//glVertex3f(line1.x, line1.y, line1.z);
+	//glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
+	//glVertex3f(line2.x, line2.y, line2.z);
+	//glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
+	//glEnd();
+
+	/*glPushMatrix();
+	glTranslatef(intersectVertex.x, intersectVertex.y, intersectVertex.z);
+	glutSolidSphere(0.25, 100, 100);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
+	glutSolidSphere(0.25, 100, 100);
+	glPopMatrix();*/
+}
+
+void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
+	vector<vec3> left;
+	vector<vec3> right;
+
+	//Separate the vertices into left and right.
+	if (frontVertices[0].x < backVertices[0].x) {
+		left = frontVertices;
+		right = backVertices;
+	}
+	else {
+		left = backVertices;
+		right = frontVertices;
+	}
+
+	//Convert quad to two triangles
+	vector<vector<vec3>> triangles;
+	if (left.size() > right.size()) {
+		triangles = quadToTriangle(left);
+		triangles.push_back(right);
+	}
+	else {
+		triangles = quadToTriangle(right);
+		triangles.push_back(left);
+	}
+
+	//Draw the new triangles.
+	draw(triangles);
+}
+/*
+ Converts the given quad into two triangles.
+ */
+vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
+	vector<vec3> triangle1;
+	vector<vec3> triangle2;
+	for (int i = 0; i < vertices.size(); i++) {
+		if (i == 0) {
+			triangle1.push_back(vertices[i]);
+			triangle2.push_back(vertices[i]);
+		}
+		else if (i == 1) {
+			triangle2.push_back(vertices[i]);
+		}
+		else if (i == 2) {
+			triangle1.push_back(vertices[i]);
+		}
+		else if (i == 3) {
+			triangle1.push_back(vertices[i]);
+			triangle2.push_back(vertices[i]);
+		}
+	}
+
+	vector<vector<vec3>> triangles;
+	triangles.push_back(triangle1);
+	triangles.push_back(triangle2);
+
+	return triangles;
+}
+
+/*
+Draws the newly cut triangle.
+*/
+void cut::draw(vector<vector<vec3>> triangles) {
+	glColor3f(0, 1, 1);
+	for (vector<vec3> triangle : triangles) {
+		glBegin(GL_TRIANGLES);
+		glNormal3f(0.0, 0.0, 1.0);
+		for (vec3 vertex : triangle) {
+			glVertex3f(vertex.x, vertex.y, vertex.z);
+		}
+		glEnd();
+
+		for (vec3 vertex : triangle) {
+			glPushMatrix();
+			glTranslatef(vertex.x, vertex.y, vertex.z);
+			glutSolidSphere(0.3, 100, 100);
+			glPopMatrix();
+		}
+	}
 }
 
 /*
@@ -163,6 +272,6 @@ vec3 cut::getLine(vec3 position, vec3 direction, int length) {
 Helper method for determining how far along the given line the intersection is.
 */
 float cut::getLineDisplacement(vec3 position, vec3 direction) {
-	float d = dot((cutPlane[0] - position), normal) / (dot(direction, normal));
-	return d;
+	float t = dot((cutPlane[0] - position), normal) / (dot(direction, normal));
+	return t;
 }
