@@ -36,7 +36,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 1000;
+float g_zfar = 100;
 
 
 // Mouse controlled Camera values
@@ -150,6 +150,11 @@ void draw() {
 	glEnd();
 	glDisable(GL_BLEND);
 
+	cout << cut_draw_1 << endl;
+	cout << cut_proj_1 << endl;
+	cout << cut_proj_2 << endl;
+	cout << cut_draw_2 << endl;
+
 	//render cut
 	vector<vec3> plane;
 	plane.push_back(cut_proj_1);
@@ -165,6 +170,7 @@ void draw() {
 	glDisable(GL_COLOR_MATERIAL);
 
 	glColor3f(1, 0, 0);
+	glLineWidth(1);
 	glBegin(GL_LINES);
 	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);

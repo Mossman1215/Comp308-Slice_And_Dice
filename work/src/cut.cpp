@@ -96,7 +96,9 @@ Returns whether or not the given point is in front or behind the plane.
 */
 int cut::isInFront(vec3 vertex) {
 	vec3 normal = findNormal();
+	cout << "D: ";
 	float d = calculateDisplacement(normal);
+	cout << d << endl;
 	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
 }
 /*
@@ -112,7 +114,7 @@ float cut::calculateDisplacement(vec3 normal) {
 Given the two sets of vertices calculates the vectors from from set to the other.
 Calculates the lines from these vectors and given vertices.
 Calculates the intersection of those lines with the plane and finally
-connects the two intersections to form the cut vector.
+connects the two intersections to form the cut line.
 */
 void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	//The two vectors
@@ -139,8 +141,8 @@ void cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	vec3 line3 = getLine(v1[0], vector1Unit, t);
 	vec3 line4 = getLine(v1[0], vector2Unit, t2);
 
-	glColor3f(1, 0, 0);
-	glLineWidth(2);
+	glColor3f(1, 1, 0);
+	glLineWidth(8);
 	glBegin(GL_LINES);
 	glVertex3f(line1.x, line1.y, line1.z);
 	glVertex3f(line3.x, line3.y, line3.z);
@@ -161,10 +163,6 @@ vec3 cut::getLine(vec3 position, vec3 direction, int length) {
 Helper method for determining how far along the given line the intersection is.
 */
 float cut::getLineDisplacement(vec3 position, vec3 direction) {
-	cout << "Plane d: ";
-	cout << planeDisplacement << endl;
-	float t = (planeDisplacement - (normal.x*position.x) - (normal.y*position.y) - (normal.z*position.z)) / ((normal.x*direction.x) + (normal.y*direction.y) + (normal.z*direction.z));
-	cout << "t: ";
-	cout << t << endl;
-	return t;
+	float d = dot((cutPlane[0] - position), normal) / (dot(direction, normal));
+	return d;
 }
