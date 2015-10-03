@@ -181,6 +181,20 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 }
 
 void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
+	//The centroid of the triangle.
+	//GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
+	//GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
+	//GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
+
+	//vec3 centroidTri(centerX, centerY, centerZ);
+
+	////The centroid of the quad.
+	//centerX = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 3;
+	//centerY = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 3;
+	//centerZ = (quad[0].z + quad[1].z + quad[2].z + quad[3].z) / 3;
+
+	//vec3 centroidQuad(centerX, centerY, centerZ);
+
 	vector<vec3> left;
 	vector<vec3> right;
 
@@ -275,3 +289,22 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 	float t = dot((cutPlane[0] - position), normal) / (dot(direction, normal));
 	return t;
 }
+
+/*
+My algorithm for separation of triangles around plane in three dimensions:
+
+We need to translate the resulting meshes by some scaler of the normal vector.
+In order to do this we first have to know which normal corresponds to what mesh.
+
+Solving this problem goes as follows:
+
+If the vector between the centroids of the two cut meshes (quad and triangle)
+intersects the normal vector or if the vector is the normal vector (has the same unit vector)
+then that normal corresponds to the mesh having the centroid which defined the direction of
+the vector.
+
+Then all we need to do is translate each vertex in the mesh by some scaler of that normal,
+and translate the other mesh by the same but negative scaler of the same normal.
+
+We then run the quadToTriangle method on the quad and draw the result.
+*/
