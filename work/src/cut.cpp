@@ -187,9 +187,9 @@ void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	vector<vector<vec3>> quadTriangles = quadToTriangle(quad);
 
 	vector<vector<vec3>> triangles;
+	triangles.push_back(triangle);
 	triangles.push_back(quadTriangles[0]);
 	triangles.push_back(quadTriangles[1]);
-	triangles.push_back(triangle);
 
 	//The shortest distance between the triangle centroid and the cutPlane.
 	float distance = normal.x*centroidTri.x + normal.y*centroidTri.y + normal.z*centroidTri.z + planeD / (pow((pow(normal.x, 2), pow(normal.y, 2), pow(normal.z, 2)), 0.5));
@@ -197,13 +197,13 @@ void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	//If centroidTri lies on same side as the normal.
 	if (distance > 0) {
 		//Draw the new triangles.
-		draw(triangles, -1);
-	}
-	else if (distance < 0) {
-		//Draw the new triangles.
 		draw(triangles, 1);
 	}
+	else if (distance < 0) {
+		draw(triangles, -1);
+	}
 	else {
+		//Draw the original (hasn't been cut yet).
 		draw(triangles, 0);
 	}
 }
@@ -239,23 +239,43 @@ vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
 
 /*
 Draws the newly cut triangle.
+triangle translated by normal * direction.
+Quad triangles translated by normal * -direction.
 */
 void cut::draw(vector<vector<vec3>> triangles, int direction) {
+	vec3 translateDirection = normal * direction;
+
+	//Translation magnitude
+	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
+
+	//Translation direction
+	vec3 translateUnit = translateDirection * (1 / normalMagntde);
+
+	
 	glColor3f(0, 1, 1);
-	for (vector<vec3> triangle : triangles) {
+	for (int i = 0; i < triangles.size(); i++) {
+		glPushMatrix();
+		if (i == 0 && direction != 0) {
+			glTranslatef(translateUnit.x, translateUnit.y, translateUnit.z);
+		}
+		else if(direction != 0) {
+			cout << "reached" << endl;
+			glTranslatef(translateUnit.x * -1, translateUnit.y * -1, translateUnit.z * -1);
+		}
 		glBegin(GL_TRIANGLES);
 		glNormal3f(0.0, 0.0, 1.0);
-		for (vec3 vertex : triangle) {
+		for (vec3 vertex : triangles[i]) {
 			glVertex3f(vertex.x, vertex.y, vertex.z);
 		}
 		glEnd();
 
-		for (vec3 vertex : triangle) {
+		for (vec3 vertex : triangles[i]) {
 			glPushMatrix();
 			glTranslatef(vertex.x, vertex.y, vertex.z);
 			glutSolidSphere(0.3, 100, 100);
 			glPopMatrix();
 		}
+		glPopMatrix();
 	}
 }
 
