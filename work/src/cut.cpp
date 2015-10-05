@@ -31,6 +31,7 @@ using namespace comp308;
 
 vector<vec3> cutPlane;
 vec3 normal;
+float planeD;
 
 cut::cut() {}
 
@@ -106,6 +107,7 @@ Returns whether or not the given point is in front or behind the plane.
 int cut::isInFront(vec3 vertex) {
 	vec3 normal = findNormal();
 	float d = calculateDisplacement(normal);
+	planeD = d;
 	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
 }
 /*
@@ -159,68 +161,51 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	vertices.push_back(intersectVertex2);
 
 	return vertices;
-
-	//glColor3f(1, 1, 0);
-	//glLineWidth(8);
-	//glBegin(GL_LINES);
-	//glVertex3f(line1.x, line1.y, line1.z);
-	//glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	//glVertex3f(line2.x, line2.y, line2.z);
-	//glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	//glEnd();
-
-	/*glPushMatrix();
-	glTranslatef(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	glutSolidSphere(0.25, 100, 100);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	glutSolidSphere(0.25, 100, 100);
-	glPopMatrix();*/
 }
 
 void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
+	vector<vec3> quad;
+	vector<vec3> triangle;
+
+	if (frontVertices.size() > backVertices.size()) {
+		quad = frontVertices;
+		triangle = backVertices;
+	}
+	else {
+		quad = backVertices;
+		triangle = frontVertices;
+	}
+
 	//The centroid of the triangle.
-	//GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
-	//GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
-	//GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
+	GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
+	GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
+	GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
 
-	//vec3 centroidTri(centerX, centerY, centerZ);
+	vec3 centroidTri(centerX, centerY, centerZ);
 
-	////The centroid of the quad.
-	//centerX = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 3;
-	//centerY = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 3;
-	//centerZ = (quad[0].z + quad[1].z + quad[2].z + quad[3].z) / 3;
+	//Convert quad to triangles
+	vector<vector<vec3>> quadTriangles = quadToTriangle(quad);
 
-	//vec3 centroidQuad(centerX, centerY, centerZ);
-
-	vector<vec3> left;
-	vector<vec3> right;
-
-	//Separate the vertices into left and right.
-	if (frontVertices[0].x < backVertices[0].x) {
-		left = frontVertices;
-		right = backVertices;
-	}
-	else {
-		left = backVertices;
-		right = frontVertices;
-	}
-
-	//Convert quad to two triangles
 	vector<vector<vec3>> triangles;
-	if (left.size() > right.size()) {
-		triangles = quadToTriangle(left);
-		triangles.push_back(right);
+	triangles.push_back(quadTriangles[0]);
+	triangles.push_back(quadTriangles[1]);
+	triangles.push_back(triangle);
+
+	//The shortest distance between the triangle centroid and the cutPlane.
+	float distance = normal.x*centroidTri.x + normal.y*centroidTri.y + normal.z*centroidTri.z + planeD / (pow((pow(normal.x, 2), pow(normal.y, 2), pow(normal.z, 2)), 0.5));
+
+	//If centroidTri lies on same side as the normal.
+	if (distance > 0) {
+		//Draw the new triangles.
+		draw(triangles, -1);
+	}
+	else if (distance < 0) {
+		//Draw the new triangles.
+		draw(triangles, 1);
 	}
 	else {
-		triangles = quadToTriangle(right);
-		triangles.push_back(left);
+		draw(triangles, 0);
 	}
-
-	//Draw the new triangles.
-	draw(triangles);
 }
 /*
  Converts the given quad into two triangles.
@@ -255,7 +240,7 @@ vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
 /*
 Draws the newly cut triangle.
 */
-void cut::draw(vector<vector<vec3>> triangles) {
+void cut::draw(vector<vector<vec3>> triangles, int direction) {
 	glColor3f(0, 1, 1);
 	for (vector<vec3> triangle : triangles) {
 		glBegin(GL_TRIANGLES);
@@ -291,20 +276,9 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 }
 
 /*
-My algorithm for separation of triangles around plane in three dimensions:
+Algorithm for separation:
 
-We need to translate the resulting meshes by some scaler of the normal vector.
-In order to do this we first have to know which normal corresponds to what mesh.
-
-Solving this problem goes as follows:
-
-If the vector between the centroids of the two cut meshes (quad and triangle)
-intersects the normal vector or if the vector is the normal vector (has the same unit vector)
-then that normal corresponds to the mesh having the centroid which defined the direction of
-the vector.
-
-Then all we need to do is translate each vertex in the mesh by some scaler of that normal,
-and translate the other mesh by the same but negative scaler of the same normal.
-
-We then run the quadToTriangle method on the quad and draw the result.
+Find the shortest distance between the centroid of both meshes and the cutplane
+If distance is > 0 then on the same side as the normal used to calculate the distance,
+otherwise lies on the other side.
 */
