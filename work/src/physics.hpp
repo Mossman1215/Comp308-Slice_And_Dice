@@ -12,12 +12,13 @@ public:
 		this->mass = mass;
 	};
 	void addForce(comp308::vec3 force);
+	void addTorque(comp308::vec4 quat);
 private:
 	double mass;
 	comp308::mat3 inertiaTensor;
 	comp308::mat3 inverseInertiaTensor;
 	comp308::vec3 position;
-	comp308::mat3 rotation;
+	comp308::vec4 rotation;
 	comp308::vec3 linearVelocity;//current velocity
 	comp308::vec3 angularVelocity;//current angular velocity
 	comp308::vec3 force;//sum of all forces
