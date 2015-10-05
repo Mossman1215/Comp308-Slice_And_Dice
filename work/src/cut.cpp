@@ -1,21 +1,3 @@
-/*
-Algorithm so far:
-
-If you can find the interseciton of a line and a plane in space, then the algorithm is as follows:
-
-Find the vertices of the triangle you are cutting, of the 3 vertices 
-2 will be in front on the plane and one will be behind the plane or vice versa.
-Find the equations of the lines representing the two edges that go from the one point on one side
-to the two points on the other side.
-
-From here, the simplest way to find the intersection of the polygon and the plane
-is to find the intersection of the two edges with the plane.
-The two calculated points from the intersection lie on the intersection line between the polygon and the plane.
-From here we have two points in space and we just need to draw a line between them. This is our intersection.
-
-Do this for every polygon. If all 3 points lie on the same side of the plane then the ploygon does not
-intersect with the plane and we shouldn't run the algorithm.
-*/
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -55,18 +37,12 @@ void cut::createCut(vector<vec3> plane) {
 
 	//Separate the vertices.
 	for (vec3 vertex : vertices) {
-		glPushMatrix();
-		glTranslatef(vertex.x, vertex.y, vertex.z);
 		if (isInFront(vertex) > 0) {
-			//glColor3f(1, 0, 0);
 			frontVertices.push_back(vertex);
 		}
 		else {
-			//glColor3f(0, 1, 0);
 			backVertices.push_back(vertex);
 		}
-		//glutSolidSphere(0.5, 100, 100);
-		glPopMatrix();
 	}
 
 	//Calculate the intersection.
@@ -148,13 +124,6 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	//The vertices at the intersection point
 	vec3 intersectVertex = getLine(v1[0], vector1Unit, t);
 	vec3 intersectVertex2 = getLine(v1[0], vector2Unit, t2);
-
-	glColor3f(1, 0, 0);
-	glLineWidth(4);
-	glBegin(GL_LINES);
-	glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	glEnd();
 
 	vector<vec3> vertices;
 	vertices.push_back(intersectVertex);
@@ -259,7 +228,6 @@ void cut::draw(vector<vector<vec3>> triangles, int direction) {
 			glTranslatef(translateUnit.x, translateUnit.y, translateUnit.z);
 		}
 		else if(direction != 0) {
-			cout << "reached" << endl;
 			glTranslatef(translateUnit.x * -1, translateUnit.y * -1, translateUnit.z * -1);
 		}
 		glBegin(GL_TRIANGLES);
@@ -268,13 +236,6 @@ void cut::draw(vector<vector<vec3>> triangles, int direction) {
 			glVertex3f(vertex.x, vertex.y, vertex.z);
 		}
 		glEnd();
-
-		for (vec3 vertex : triangles[i]) {
-			glPushMatrix();
-			glTranslatef(vertex.x, vertex.y, vertex.z);
-			glutSolidSphere(0.3, 100, 100);
-			glPopMatrix();
-		}
 		glPopMatrix();
 	}
 }
@@ -296,9 +257,8 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 }
 
 /*
-Algorithm for separation:
+TODO
 
-Find the shortest distance between the centroid of both meshes and the cutplane
-If distance is > 0 then on the same side as the normal used to calculate the distance,
-otherwise lies on the other side.
+Make new geometry everytime a cut a made.
+
 */

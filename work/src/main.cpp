@@ -17,7 +17,7 @@
 #include <iostream>
 #include <string>
 #include "comp308.hpp"
-#include "display.hpp"
+#include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
 
@@ -60,7 +60,7 @@ vec3 cut_proj_1;
 vec3 cut_proj_2;
 int g_start_time=0;
 float g_delta=0;
-display *g_display = nullptr;
+geometry *g_geometry = nullptr;
 cut *g_cut = nullptr;
 Rigidbody* box;
 bool g_paused = false;
@@ -130,7 +130,7 @@ void draw() {
 
 
 	// Render geometry
-	//g_display->draw();
+	//g_geometry->draw();
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	g_display = new display();
+	g_geometry = new geometry();
 	g_cut = new cut();
 	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
 	box->addForce(vec3(0,-9.81,0));

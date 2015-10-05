@@ -6,14 +6,14 @@
 #include <stdexcept>
 
 #include "comp308.hpp"
-#include "display.hpp"
+#include "geometry.hpp"
 
 using namespace std;
 using namespace comp308;
 
-display::display(){}
+geometry::geometry(){}
 
-void display::draw() {
+void geometry::draw() {
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
@@ -33,8 +33,8 @@ void display::draw() {
 
 }
 
-void display::render() {
+void geometry::render() {
 	glFlush();
 }
 
-display::~display(){}
+geometry::~geometry(){}

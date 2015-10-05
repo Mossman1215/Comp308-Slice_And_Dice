@@ -8,12 +8,12 @@
 #include <vector>
 #include "comp308.hpp"
 
-class display
+class geometry
 {
 public:
-	display();
+	geometry();
 	void draw();
 	void render();
-	virtual ~display();
+	virtual ~geometry();
 };
 

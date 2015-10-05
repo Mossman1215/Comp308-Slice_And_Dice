@@ -6,7 +6,7 @@
 # TODO list your header files (.hpp) here
 SET(headers
 	"comp308.hpp"
-	"display.hpp"
+	"geometry.hpp"
 	"imageLoader.hpp"
 	"shaderLoader.hpp"
 	"physics.hpp"
@@ -16,7 +16,7 @@ SET(headers
 # TODO list your source files (.cpp) here
 SET(sources
 	"main.cpp"
-	"Display.cpp"
+	"geometry.cpp"
 	"physics.cpp"
 	"cut.cpp")
 
