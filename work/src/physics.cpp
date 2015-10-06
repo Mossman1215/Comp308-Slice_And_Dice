@@ -18,3 +18,10 @@ comp308::vec3 Rigidbody::update(float delta){
 	}
 	return position;
 }
+Physics::checkCollisions(float delta){
+	//check every object with the other objects in the scene and if their bounding boxes collide add them to resolve list
+	//go along each axis
+	//objects have bounding boxes that are intervals on these axes
+	//if two intervals overlap add to collisions list
+	
+}
