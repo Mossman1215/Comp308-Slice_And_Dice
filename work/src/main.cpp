@@ -63,6 +63,8 @@ float g_delta=0;
 display *g_display = nullptr;
 cut *g_cut = nullptr;
 Rigidbody* box;
+Rigidbody* box2;
+Physics* physics;
 bool g_paused = false;
 // Sets up where and what the light is
 // Called once on start up
@@ -136,7 +138,12 @@ void draw() {
 	    glTranslatef(position.x,position.y,position.z);
 	    glutSolidCube(1);
 	glPopMatrix();
-
+	glPushMatrix();    
+	  vec3 position2 = box2->update(g_delta);
+	  glTranslatef(position2.x,position2.y,position2.z);
+	  glutSolidCube(1);
+	glPopMatrix();
+	physics->checkCollisions(g_delta);
 	glDisable(GL_LIGHTING);
 
 	glEnable(GL_BLEND);
@@ -359,8 +366,18 @@ int main(int argc, char **argv) {
 	// Finally create our geometry
 	g_display = new display();
 	g_cut = new cut();
-	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
+	vector<vec3> vertex;
+	vertex.push_back(vec3(-1,1,-1));
+	vertex.push_back(vec3(-1,-1,-1));
+	vertex.push_back(vec3(1,1,1));
+	vertex.push_back(vec3(1,-1,1));
+	physics = new Physics();
+	box = new Rigidbody(vec3(0,10,0),vertex,1);
+	box2 = new Rigidbody(vec3(0.5,10,0),vertex,1);
+	physics->addRigidbody(*box2);
+	physics->addRigidbody(*box);
 	box->addForce(vec3(0,-9.81,0));
+	box2->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();
