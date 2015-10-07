@@ -7,6 +7,7 @@
 
 #include "comp308.hpp"
 #include "cut.hpp"
+#include "geometry.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -17,20 +18,10 @@ float planeD;
 
 cut::cut() {}
 
-void cut::createCut(vector<vec3> plane) {
-	/*
-	Currently hard coding in the vertices will have to calculate these on the fly in the finished product.
-	These are the vertices of the current triangle I'm iterating over.
-	*/
-	vector<vec3> vertices;
-	vec3 v1(-5.0, -5.0, 5.0);
-	vec3 v2(-5.0, 5.0, -2.5);
-	vec3 v3(5.0, 5.0, -5.0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-
+vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
 	cutPlane = plane;
+	vector<geometry> allGeometry = geometrys;
+	vector<vec3> vertices = allGeometry[0].getTriangles()[0];
 	
 	vector<vec3> frontVertices;
 	vector<vec3> backVertices;
@@ -61,9 +52,38 @@ void cut::createCut(vector<vec3> plane) {
 		backVertices.push_back(vertex);
 	}
 
-	//Actually cut it.
-	cutTriangle(frontVertices, backVertices);
+	vector<vector<vec3>> newTriangles;
+
+	//Actually cut it.	------------------------------- At the moment only cuts 1 triangle.
+	newTriangles = cutGeometry(frontVertices, backVertices);
+
+	for (vector<vec3> triangle : newTriangles) {
+		cout << "new triangle" << endl;
+		for (vec3 vertex : triangle) {
+			cout << vertex << endl;
+		}
+	}
+
+	vector<vector<vec3>> triangles1;
+	triangles1.push_back(newTriangles[0]);
+	vector<vector<vec3>> triangles2;
+	triangles2.push_back(newTriangles[1]);
+	triangles2.push_back(newTriangles[2]);
+
+	geometry newGeometry1 = geometry("filename", triangles1);
+	geometry newGeometry2 = geometry("filename", triangles2);
+
+	vector<geometry> newGeometrys;
+
+	newGeometrys.push_back(newGeometry1);
+	newGeometrys.push_back(newGeometry2);
+
+	return newGeometrys;
 }
+
+//void cut::separateCut() {
+//
+//}
 
 /*
 Calculates the normal of the plane.
@@ -132,7 +152,7 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	return vertices;
 }
 
-void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
+vector<vector<vec3>> cut::cutGeometry(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	vector<vec3> quad;
 	vector<vec3> triangle;
 
@@ -163,18 +183,22 @@ void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	//The shortest distance between the triangle centroid and the cutPlane.
 	float distance = normal.x*centroidTri.x + normal.y*centroidTri.y + normal.z*centroidTri.z + planeD / (pow((pow(normal.x, 2), pow(normal.y, 2), pow(normal.z, 2)), 0.5));
 
+	vector<vector<vec3>> newTriangles;
+
 	//If centroidTri lies on same side as the normal.
 	if (distance > 0) {
 		//Draw the new triangles.
-		draw(triangles, 1);
+		newTriangles = cutTriangle(triangles, 1);
 	}
 	else if (distance < 0) {
-		draw(triangles, -1);
+		newTriangles = cutTriangle(triangles, -1);
 	}
 	else {
 		//Draw the original (hasn't been cut yet).
-		draw(triangles, 0);
+		newTriangles = cutTriangle(triangles, 0);
 	}
+
+	return newTriangles;
 }
 /*
  Converts the given quad into two triangles.
@@ -207,11 +231,13 @@ vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
 }
 
 /*
-Draws the newly cut triangle.
+cuts a single triangle making up the mesh of the geometry
 triangle translated by normal * direction.
 Quad triangles translated by normal * -direction.
 */
-void cut::draw(vector<vector<vec3>> triangles, int direction) {
+vector<vector<vec3>> cut::cutTriangle(vector<vector<vec3>> triangles, int direction) {
+	vector<vector<vec3>> newTriangles = triangles;
+
 	vec3 translateDirection = normal * direction;
 
 	//Translation magnitude
@@ -220,24 +246,41 @@ void cut::draw(vector<vector<vec3>> triangles, int direction) {
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
-	
-	glColor3f(0, 1, 1);
-	for (int i = 0; i < triangles.size(); i++) {
-		glPushMatrix();
-		if (i == 0 && direction != 0) {
-			glTranslatef(translateUnit.x, translateUnit.y, translateUnit.z);
+	for (int i = 0; i < newTriangles.size(); i++) {
+		for (vec3 vertex : newTriangles[i]) {
+			if (i == 0 && direction != 0) {
+				vertex.x = vertex.x + translateUnit.x;
+				vertex.y = vertex.y + translateUnit.y;
+				vertex.z = vertex.z + translateUnit.z;
+			}
+			else if (direction != 0) {
+				vertex.x = vertex.x + translateUnit.x * -1;
+				vertex.y = vertex.y + translateUnit.y * -1;
+				vertex.z = vertex.z + translateUnit.z * -1;
+			}
 		}
-		else if(direction != 0) {
-			glTranslatef(translateUnit.x * -1, translateUnit.y * -1, translateUnit.z * -1);
-		}
-		glBegin(GL_TRIANGLES);
-		glNormal3f(0.0, 0.0, 1.0);
-		for (vec3 vertex : triangles[i]) {
-			glVertex3f(vertex.x, vertex.y, vertex.z);
-		}
-		glEnd();
-		glPopMatrix();
 	}
+
+	return newTriangles;
+
+
+	//glColor3f(0, 1, 1);
+	//for (int i = 0; i < triangles.size(); i++) {
+	//	glPushMatrix();
+	//	if (i == 0 && direction != 0) {
+	//		glTranslatef(translateUnit.x, translateUnit.y, translateUnit.z);
+	//	}
+	//	else if(direction != 0) {
+	//		glTranslatef(translateUnit.x * -1, translateUnit.y * -1, translateUnit.z * -1);
+	//	}
+	//	glBegin(GL_TRIANGLES);
+	//	glNormal3f(0.0, 0.0, 1.0);
+	//	for (vec3 vertex : triangles[i]) {
+	//		glVertex3f(vertex.x, vertex.y, vertex.z);
+	//	}
+	//	glEnd();
+	//	glPopMatrix();
+	//}
 }
 
 /*
@@ -259,6 +302,6 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 /*
 TODO
 
-Make new geometry everytime a cut a made.
+Read in geometry and output geometry so that multiple triangles can be cut with one plane.
 
 */

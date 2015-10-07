@@ -60,7 +60,7 @@ vec3 cut_proj_1;
 vec3 cut_proj_2;
 int g_start_time=0;
 float g_delta=0;
-geometry *g_geometry = nullptr;
+vector<geometry> g_geometry;
 cut *g_cut = nullptr;
 Rigidbody* box;
 bool g_paused = false;
@@ -130,7 +130,10 @@ void draw() {
 
 
 	// Render geometry
-	//g_geometry->draw();
+	for (geometry Geometry : g_geometry) {
+		Geometry.draw();
+	}
+
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
@@ -149,14 +152,6 @@ void draw() {
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
 	glDisable(GL_BLEND);
-
-	//render cut
-	vector<vec3> plane;
-	plane.push_back(cut_proj_1);
-	plane.push_back(cut_proj_2);
-	plane.push_back(cut_draw_2);
-
-	g_cut->createCut(plane);
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
@@ -269,6 +264,29 @@ void mouseCallback(int button, int state, int x, int y) {
 				cut_proj_2 = myUnProject(x, y, 1);
 				cout << cut_draw_1 << cut_draw_2 << endl;
 				cout << cut_proj_1 << cut_proj_2 << endl;
+
+				//Create cut upon mouse release.
+				vector<vec3> plane;
+				plane.push_back(cut_proj_1);
+				plane.push_back(cut_proj_2);
+				plane.push_back(cut_draw_2);
+
+				vector<geometry> allGeometry;
+
+				allGeometry = g_cut->createCut(plane, g_geometry);
+				
+				/*for (geometry Geometry : allGeometry) {
+					cout << "new geometry---------------------------------" << endl;
+					for (vector<vec3> triangle : Geometry.getTriangles()) {
+						cout << "new triangle--------------------------------" << endl;
+						for (vec3 vertex : triangle) {
+							cout << vertex << endl;
+						}
+					}
+				}
+				cout << "all geometry iterated over------------------------------------" << endl;*/
+
+				g_geometry = allGeometry;
 			}
 			break;
 
@@ -357,7 +375,19 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	g_geometry = new geometry();
+	vector<vec3> vertices;
+	vec3 v1(-5.0, -5.0, 5.0);
+	vec3 v2(-5.0, 5.0, -2.5);
+	vec3 v3(5.0, 5.0, -5.0);
+	vertices.push_back(v1);
+	vertices.push_back(v2);
+	vertices.push_back(v3);
+	vector<vector<vec3>> triangles;
+	triangles.push_back(vertices);
+
+	geometry *triangle = new geometry("filename", triangles);
+	g_geometry.push_back(*triangle);
+
 	g_cut = new cut();
 	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
 	box->addForce(vec3(0,-9.81,0));

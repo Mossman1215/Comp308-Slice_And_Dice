@@ -11,7 +11,11 @@
 using namespace std;
 using namespace comp308;
 
-geometry::geometry(){}
+vector<vector<vec3>> allTriangles;
+
+geometry::geometry(string filename, vector<vector<vec3>> triangles){
+	allTriangles = triangles;
+}
 
 void geometry::draw() {
 	glMatrixMode(GL_MODELVIEW);
@@ -34,7 +38,23 @@ void geometry::draw() {
 }
 
 void geometry::render() {
-	glFlush();
+	glColor3f(0, 1, 1);
+	for (vector<vec3> triangle : allTriangles) {
+		glBegin(GL_TRIANGLES);
+		glNormal3f(0.0, 0.0, 1.0);
+		for (vec3 vertex : triangle) {
+			glVertex3f(vertex.x, vertex.y, vertex.z);
+		}
+		glEnd();
+	}
+}
+
+vector<vector<vec3>> geometry::getTriangles() {
+	return allTriangles;
+}
+
+void geometry::addToTriangles(vector<vec3> triangle) {
+	allTriangles.push_back(triangle);
 }
 
 geometry::~geometry(){}

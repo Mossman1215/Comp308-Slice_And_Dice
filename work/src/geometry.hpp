@@ -11,9 +11,10 @@
 class geometry
 {
 public:
-	geometry();
+	geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
 	void draw();
 	void render();
+	std::vector<std::vector<comp308::vec3>> getTriangles();
+	void addToTriangles(std::vector<comp308::vec3> triangle);
 	virtual ~geometry();
 };
-
