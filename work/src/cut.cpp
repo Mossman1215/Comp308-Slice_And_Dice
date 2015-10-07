@@ -57,26 +57,19 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	//Actually cut it.	------------------------------- At the moment only cuts 1 triangle.
 	newTriangles = cutGeometry(frontVertices, backVertices);
 
-	for (vector<vec3> triangle : newTriangles) {
-		cout << "new triangle" << endl;
-		for (vec3 vertex : triangle) {
-			cout << vertex << endl;
-		}
-	}
-
 	vector<vector<vec3>> triangles1;
 	triangles1.push_back(newTriangles[0]);
 	vector<vector<vec3>> triangles2;
 	triangles2.push_back(newTriangles[1]);
 	triangles2.push_back(newTriangles[2]);
 
-	geometry newGeometry1 = geometry("filename", triangles1);
-	geometry newGeometry2 = geometry("filename", triangles2);
-
 	vector<geometry> newGeometrys;
 
-	newGeometrys.push_back(newGeometry1);
-	newGeometrys.push_back(newGeometry2);
+	geometry* newGeometry1 = new geometry("filename", triangles1);
+	newGeometrys.push_back(*newGeometry1);
+
+	geometry* newGeometry2 = new geometry("filename", triangles2);
+	newGeometrys.push_back(*newGeometry2);
 
 	return newGeometrys;
 }
@@ -164,6 +157,7 @@ vector<vector<vec3>> cut::cutGeometry(vector<vec3> frontVertices, vector<vec3> b
 		quad = backVertices;
 		triangle = frontVertices;
 	}
+
 
 	//The centroid of the triangle.
 	GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
@@ -262,25 +256,6 @@ vector<vector<vec3>> cut::cutTriangle(vector<vector<vec3>> triangles, int direct
 	}
 
 	return newTriangles;
-
-
-	//glColor3f(0, 1, 1);
-	//for (int i = 0; i < triangles.size(); i++) {
-	//	glPushMatrix();
-	//	if (i == 0 && direction != 0) {
-	//		glTranslatef(translateUnit.x, translateUnit.y, translateUnit.z);
-	//	}
-	//	else if(direction != 0) {
-	//		glTranslatef(translateUnit.x * -1, translateUnit.y * -1, translateUnit.z * -1);
-	//	}
-	//	glBegin(GL_TRIANGLES);
-	//	glNormal3f(0.0, 0.0, 1.0);
-	//	for (vec3 vertex : triangles[i]) {
-	//		glVertex3f(vertex.x, vertex.y, vertex.z);
-	//	}
-	//	glEnd();
-	//	glPopMatrix();
-	//}
 }
 
 /*
