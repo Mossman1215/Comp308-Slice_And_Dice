@@ -37,8 +37,8 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 }
 
 /*
-For the given geometry, for every triangle within the geometry, cut the triangle if it intersects with the plane and
-add the resulting triangles to either one of two geometrys (left of plane and right of plane).
+For the given geometry and for every triangle within that geometry, if it intersects with the plane; cut the triangle and
+add the resulting triangles to either one of two geometrys (left of plane or right of plane).
 Return those geometrys.
 */
 vector<geometry> cut::cutGeometry(geometry g_geometry) {
@@ -186,6 +186,10 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	return vertices;
 }
 
+/*
+Given a set of vertices that make up a triangle and a quad. Cut the triangle that is made up of
+these shapes.
+*/
 vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	vector<vec3> quad;
 	vector<vec3> triangle;
@@ -198,11 +202,6 @@ vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> b
 		quad = backVertices;
 		triangle = frontVertices;
 	}
-
-	////The centroid of the triangle.
-	//GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
-	//GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
-	//GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
 
 	vec3 centroidTri = getCentroid(triangle);
 
@@ -265,7 +264,7 @@ vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
 }
 
 /*
-cuts a single triangle making up the mesh of the geometry
+Separates a single triangle making up the mesh of the geometry
 triangle translated by normal * direction.
 Quad triangles translated by normal * -direction.
 */
