@@ -372,8 +372,11 @@ int main(int argc, char **argv) {
 	vector<vector<vec3>> triangles;
 	triangles.push_back(vertices);
 
-	geometry *triangle = new geometry("filename", triangles);
-	g_geometry.push_back(*triangle);
+	/*geometry *triangle = new geometry("filename", triangles);
+	g_geometry.push_back(*triangle);*/
+
+	geometry *g_sphere = new geometry("work / res / assets / sphere.obj");
+	g_geometry.push_back(*g_sphere);
 
 	g_cut = new cut();
 	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
