@@ -18,6 +18,33 @@ float planeD;
 
 cut::cut() {}
 
+/*
+Needs to take in all the geometrys and output all the geometrys that result from the cut.
+
+At the moment it takes in a triangle and outputs 3. Then on the next cut it takes in the 3 triangles
+and only uses the first one. Discards the other 2 and starts again.
+
+takes in one geometry, outputs two.
+
+takes in two geometry outputs 4, takes in 4 etc.
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+for each geometry, make two new geometry.
+
+for every triangle in the geometry
+
+cut the triangle, this will produce 3 triangles.	(If cut doesn't intersect then all three triangles will be the same).
+
+if first triangle of the 3 is to the left of the plane add to geometry1, otherwise add to geometry2; the other two
+go to the other geometry. Unless the second triangle also lies on the same side. In which case it didn't intersect and we should add
+all triangles to the same geometry.
+
+for each geometry, we should now have two new geometry, if one of those geometrys are empty. Then discard it.
+Add the geometry(s) to allGeometry. 
+
+When finished we should return allGeometry.
+*/
 vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
 	cutPlane = plane;
 	vector<geometry> allGeometry = geometrys;
@@ -55,7 +82,7 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	vector<vector<vec3>> newTriangles;
 
 	//Actually cut it.	------------------------------- At the moment only cuts 1 triangle.
-	newTriangles = cutGeometry(frontVertices, backVertices);
+	newTriangles = cutTriangle(frontVertices, backVertices);
 
 	vector<vector<vec3>> triangles1;
 	triangles1.push_back(newTriangles[0]);
@@ -74,7 +101,7 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	return newGeometrys;
 }
 
-//void cut::separateCut() {
+//vector<geometry> cut::cutGeometry(geometry geometry)) {
 //
 //}
 
@@ -145,7 +172,7 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	return vertices;
 }
 
-vector<vector<vec3>> cut::cutGeometry(vector<vec3> frontVertices, vector<vec3> backVertices) {
+vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
 	vector<vec3> quad;
 	vector<vec3> triangle;
 
@@ -182,14 +209,14 @@ vector<vector<vec3>> cut::cutGeometry(vector<vec3> frontVertices, vector<vec3> b
 	//If centroidTri lies on same side as the normal.
 	if (distance > 0) {
 		//Draw the new triangles.
-		newTriangles = cutTriangle(triangles, 1);
+		newTriangles = separateTriangle(triangles, 1);
 	}
 	else if (distance < 0) {
-		newTriangles = cutTriangle(triangles, -1);
+		newTriangles = separateTriangle(triangles, -1);
 	}
 	else {
 		//Draw the original (hasn't been cut yet).
-		newTriangles = cutTriangle(triangles, 0);
+		newTriangles = separateTriangle(triangles, 0);
 	}
 
 	return newTriangles;
@@ -229,7 +256,7 @@ cuts a single triangle making up the mesh of the geometry
 triangle translated by normal * direction.
 Quad triangles translated by normal * -direction.
 */
-vector<vector<vec3>> cut::cutTriangle(vector<vector<vec3>> triangles, int direction) {
+vector<vector<vec3>> cut::separateTriangle(vector<vector<vec3>> triangles, int direction) {
 	vector<vector<vec3>> newTriangles = triangles;
 
 	vec3 translateDirection = normal * direction;
