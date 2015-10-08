@@ -33,6 +33,8 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 		}
 	}
 
+	cout << allGeometry.size() << endl;
+
 	return allGeometry;
 }
 
@@ -95,13 +97,16 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		if (isInFront(tri1Centroid) > 0) {
 			geometry1.addToTriangles(newTriangles[0]);
 		}
-		if (isInFront(tri1Centroid) < 0) {
-			geometry2.addToTriangles(newTriangles[1]);
-			geometry2.addToTriangles(newTriangles[2]);
+		else {
+			geometry2.addToTriangles(newTriangles[0]);
 		}
-		else if (isInFront(tri1Centroid) > 0) {
+		if (isInFront(tri2Centroid) > 0) {
 			geometry1.addToTriangles(newTriangles[1]);
 			geometry1.addToTriangles(newTriangles[2]);
+		}
+		else {
+			geometry2.addToTriangles(newTriangles[1]);
+			geometry2.addToTriangles(newTriangles[2]);
 		}
 	}
 
