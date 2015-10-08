@@ -262,8 +262,6 @@ void mouseCallback(int button, int state, int x, int y) {
 			if (!g_drawMouse) {
 				cut_draw_2 = myUnProject(x, y, 0);
 				cut_proj_2 = myUnProject(x, y, 1);
-				cout << cut_draw_1 << cut_draw_2 << endl;
-				cout << cut_proj_1 << cut_proj_2 << endl;
 
 				//Create cut upon mouse release.
 				vector<vec3> plane;
@@ -274,17 +272,6 @@ void mouseCallback(int button, int state, int x, int y) {
 				vector<geometry> allGeometry;
 
 				allGeometry = g_cut->createCut(plane, g_geometry);
-				
-				/*for (geometry Geometry : allGeometry) {
-					cout << "new geometry---------------------------------" << endl;
-					for (vector<vec3> triangle : Geometry.getTriangles()) {
-						cout << "new triangle--------------------------------" << endl;
-						for (vec3 vertex : triangle) {
-							cout << vertex << endl;
-						}
-					}
-				}
-				cout << "all geometry iterated over------------------------------------" << endl;*/
 
 				g_geometry = allGeometry;
 			}

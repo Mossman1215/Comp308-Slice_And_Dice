@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <random>
 
 #include "comp308.hpp"
 #include "geometry.hpp"
@@ -13,10 +14,20 @@ using namespace comp308;
 
 vector<vector<vec3>> allTriangles;
 
-geometry::geometry() {}
+
+vec3 random_vec3() {
+	static default_random_engine re;
+	uniform_real_distribution<float> dist(0, 1.0);
+	return vec3(dist(re), dist(re), dist(re));
+}
+
+geometry::geometry() {
+	m_color = normalize(random_vec3());
+}
 
 geometry::geometry(string filename, vector<vector<vec3>> triangles){
 	allTriangles = triangles;
+	m_color = normalize(random_vec3());
 }
 
 void geometry::draw() {
@@ -40,7 +51,7 @@ void geometry::draw() {
 }
 
 void geometry::render() {
-	glColor3f(0, 1, 1);
+	glColor3f(m_color.x, m_color.y, m_color.z);
 	for (vector<vec3> triangle : allTriangles) {
 		glBegin(GL_TRIANGLES);
 		glNormal3f(0.0, 0.0, 1.0);

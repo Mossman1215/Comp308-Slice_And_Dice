@@ -12,6 +12,7 @@ class geometry
 {
 private:
 	std::vector<std::vector<comp308::vec3>> allTriangles;	//The tiangles that make up this geometry.
+	comp308::vec3 m_color;
 public:
 	geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
 	geometry();

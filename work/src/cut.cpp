@@ -33,7 +33,9 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 		}
 	}
 
-	cout << allGeometry.size() << endl;
+	cout << "Currently rendering ";
+	cout << allGeometry.size();
+	cout << " pieces of geometry" << endl;
 
 	return allGeometry;
 }
@@ -285,7 +287,7 @@ vector<vector<vec3>> cut::separateTriangle(vector<vector<vec3>> triangles, int d
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
 	for (int i = 0; i < newTriangles.size(); i++) {
-		for (vec3 vertex : newTriangles[i]) {
+		for (vec3 &vertex : newTriangles[i]) {
 			if (i == 0 && direction != 0) {
 				vertex.x = vertex.x + translateUnit.x;
 				vertex.y = vertex.y + translateUnit.y;
