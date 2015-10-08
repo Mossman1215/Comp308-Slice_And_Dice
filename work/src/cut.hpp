@@ -11,6 +11,7 @@
 
 class cut {
 private:
+	std::vector<geometry> cutGeometry(geometry geometry);
 	comp308::vec3 findNormal();
 	int isInFront(comp308::vec3 vertex);
 	float calculateDisplacement(comp308::vec3 normal);
@@ -20,6 +21,7 @@ private:
 	std::vector<std::vector<comp308::vec3>> separateTriangle(std::vector<std::vector<comp308::vec3>> triangles, int direction);
 	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, int length);
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);
+	comp308::vec3 getCentroid(std::vector<comp308::vec3> shape);
 public:
 	cut();
 	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry);

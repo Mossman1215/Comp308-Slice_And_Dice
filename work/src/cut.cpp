@@ -19,91 +19,105 @@ float planeD;
 cut::cut() {}
 
 /*
-Needs to take in all the geometrys and output all the geometrys that result from the cut.
-
-At the moment it takes in a triangle and outputs 3. Then on the next cut it takes in the 3 triangles
-and only uses the first one. Discards the other 2 and starts again.
-
-takes in one geometry, outputs two.
-
-takes in two geometry outputs 4, takes in 4 etc.
-
----------------------------------------------------------------------------------------------------------------------------------------
-
-for each geometry, make two new geometry.
-
-for every triangle in the geometry
-
-cut the triangle, this will produce 3 triangles.	(If cut doesn't intersect then all three triangles will be the same).
-
-if first triangle of the 3 is to the left of the plane add to geometry1, otherwise add to geometry2; the other two
-go to the other geometry. Unless the second triangle also lies on the same side. In which case it didn't intersect and we should add
-all triangles to the same geometry.
-
-for each geometry, we should now have two new geometry, if one of those geometrys are empty. Then discard it.
-Add the geometry(s) to allGeometry. 
-
-When finished we should return allGeometry.
+For every geometry currently in the world, cut that geometry if it intersects with the plane
+and return new geometry resulting from the cut.
 */
 vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
 	cutPlane = plane;
-	vector<geometry> allGeometry = geometrys;
-	vector<vec3> vertices = allGeometry[0].getTriangles()[0];
-	
-	vector<vec3> frontVertices;
-	vector<vec3> backVertices;
-
-	//Separate the vertices.
-	for (vec3 vertex : vertices) {
-		if (isInFront(vertex) > 0) {
-			frontVertices.push_back(vertex);
-		}
-		else {
-			backVertices.push_back(vertex);
+	vector<geometry> allGeometry;
+	for (geometry g_geometry : geometrys) {
+		vector<geometry> newGeometrys;
+		newGeometrys = cutGeometry(g_geometry);
+		for (geometry newGeometry : newGeometrys) {
+			allGeometry.push_back(newGeometry);
 		}
 	}
 
-	//Calculate the intersection.
-	if (frontVertices.size() > 0 && backVertices.size() > 0) {
-		if (frontVertices.size() > backVertices.size()) {
-			vertices = calculateIntersection(backVertices, frontVertices);
-		}
-		else {
-			vertices = calculateIntersection(frontVertices, backVertices);
-		}
-	}
-
-	//Add the new vertices to the old ones
-	for (vec3 vertex : vertices) {
-		frontVertices.push_back(vertex);
-		backVertices.push_back(vertex);
-	}
-
-	vector<vector<vec3>> newTriangles;
-
-	//Actually cut it.	------------------------------- At the moment only cuts 1 triangle.
-	newTriangles = cutTriangle(frontVertices, backVertices);
-
-	vector<vector<vec3>> triangles1;
-	triangles1.push_back(newTriangles[0]);
-	vector<vector<vec3>> triangles2;
-	triangles2.push_back(newTriangles[1]);
-	triangles2.push_back(newTriangles[2]);
-
-	vector<geometry> newGeometrys;
-
-	geometry* newGeometry1 = new geometry("filename", triangles1);
-	newGeometrys.push_back(*newGeometry1);
-
-	geometry* newGeometry2 = new geometry("filename", triangles2);
-	newGeometrys.push_back(*newGeometry2);
-
-	return newGeometrys;
+	return allGeometry;
 }
 
-//vector<geometry> cut::cutGeometry(geometry geometry)) {
-//
-//}
+/*
+For the given geometry, for every triangle within the geometry, cut the triangle if it intersects with the plane and
+add the resulting triangles to either one of two geometrys (left of plane and right of plane).
+Return those geometrys.
+*/
+vector<geometry> cut::cutGeometry(geometry g_geometry) {
+	geometry geometry1 = geometry();
+	geometry geometry2  = geometry();
+
+	for (vector<vec3> triangle : g_geometry.getTriangles()) {
+		vector<vec3> vertices = triangle;
+
+		vector<vec3> frontVertices;
+		vector<vec3> backVertices;
+
+		//Separate the vertices.
+		for (vec3 vertex : vertices) {
+			if (isInFront(vertex) > 0) {
+				frontVertices.push_back(vertex);
+			}
+			else {
+				backVertices.push_back(vertex);
+			}
+		}
+
+		//Calculate the intersection.
+		if (frontVertices.size() > 0 && backVertices.size() > 0) {
+			if (frontVertices.size() > backVertices.size()) {
+				vertices = calculateIntersection(backVertices, frontVertices);
+			}
+			else {
+				vertices = calculateIntersection(frontVertices, backVertices);
+			}
+		}
+
+		//Add the new vertices to the old ones
+		for (vec3 vertex : vertices) {
+			frontVertices.push_back(vertex);
+			backVertices.push_back(vertex);
+		}
+
+		vector<vector<vec3>> newTriangles;
+
+		//Actually cut it.
+		newTriangles = cutTriangle(frontVertices, backVertices);
+
+		vector<vector<vec3>> triangles1;
+		triangles1.push_back(newTriangles[0]);
+		vector<vector<vec3>> triangles2;
+		triangles2.push_back(newTriangles[1]);
+		triangles2.push_back(newTriangles[2]);
+
+		vec3 tri1Centroid = getCentroid(newTriangles[0]);
+		vec3 tri2Centroid = getCentroid(newTriangles[1]);
+
+		//Add the new triangles to the corresponding geometry.
+		if (isInFront(tri1Centroid) > 0) {
+			geometry1.addToTriangles(newTriangles[0]);
+		}
+		if (isInFront(tri1Centroid) < 0) {
+			geometry2.addToTriangles(newTriangles[1]);
+			geometry2.addToTriangles(newTriangles[2]);
+		}
+		else if (isInFront(tri1Centroid) > 0) {
+			geometry1.addToTriangles(newTriangles[1]);
+			geometry1.addToTriangles(newTriangles[2]);
+		}
+	}
+
+	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
+	vector<geometry> bothGeometrys;
+
+	if (geometry1.getTriangles().size() > 0) {
+		bothGeometrys.push_back(geometry1);
+	}
+
+	if (geometry2.getTriangles().size() > 0) {
+		bothGeometrys.push_back(geometry2);
+	}
+
+	return bothGeometrys;
+}
 
 /*
 Calculates the normal of the plane.
@@ -185,13 +199,12 @@ vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> b
 		triangle = frontVertices;
 	}
 
+	////The centroid of the triangle.
+	//GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
+	//GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
+	//GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
 
-	//The centroid of the triangle.
-	GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
-	GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
-	GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
-
-	vec3 centroidTri(centerX, centerY, centerZ);
+	vec3 centroidTri = getCentroid(triangle);
 
 	//Convert quad to triangles
 	vector<vector<vec3>> quadTriangles = quadToTriangle(quad);
@@ -302,8 +315,14 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 }
 
 /*
-TODO
-
-Read in geometry and output geometry so that multiple triangles can be cut with one plane.
-
+Helper method for finding the centroid of a shape.
 */
+vec3 cut::getCentroid(vector<vec3> shape) {
+	GLfloat centerX = (shape[0].x + shape[1].x + shape[2].x) / 3;
+	GLfloat centerY = (shape[0].y + shape[1].y + shape[2].y) / 3;
+	GLfloat centerZ = (shape[0].z + shape[1].z + shape[2].z) / 3;
+
+	vec3 centroid(centerX, centerY, centerZ);
+
+	return centroid;
+}

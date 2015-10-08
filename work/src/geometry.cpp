@@ -13,6 +13,8 @@ using namespace comp308;
 
 vector<vector<vec3>> allTriangles;
 
+geometry::geometry() {}
+
 geometry::geometry(string filename, vector<vector<vec3>> triangles){
 	allTriangles = triangles;
 }

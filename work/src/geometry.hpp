@@ -14,6 +14,7 @@ private:
 	std::vector<std::vector<comp308::vec3>> allTriangles;	//The tiangles that make up this geometry.
 public:
 	geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
+	geometry();
 	void draw();
 	void render();
 	std::vector<std::vector<comp308::vec3>> getTriangles();
