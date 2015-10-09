@@ -50,7 +50,9 @@ Return those geometrys.
 */
 vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	geometry geometry1 = geometry();
-	geometry geometry2  = geometry();
+	geometry geometry2 = geometry();
+	int intersects = 0;
+	vector<vector<vec3>> tempTriangles;
 
 	for (vector<vec3> triangle : g_geometry.getTriangles()) {
 		vector<vec3> vertices = triangle;
@@ -69,7 +71,8 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		}
 
 		//Calculate the intersection.
-		if (frontVertices.size() > 0 && backVertices.size() > 0) {
+		if (frontVertices.size() > 0 && backVertices.size() > 0) {	//If triangle intersects with the plane.
+			intersects = 1;
 			if (frontVertices.size() > backVertices.size()) {
 				vertices = calculateIntersection(backVertices, frontVertices);
 			}
@@ -113,11 +116,46 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 				geometry2.addToTriangles(newTriangles[2]);
 			}
 		}
+		else {
+			tempTriangles.push_back(triangle);
+		}
+	}
 
+	for (vector<vec3> triangle : tempTriangles) {
+		if (intersects == 1) {
+			vec3 centroid = getCentroid(triangle);
+			float distance = dot(normal, (centroid - cutPlane[0]));
+			vector<vec3> newTriangle;
+			if (distance > 0) {
+				newTriangle = separateTriangle(triangle, 1);
+			}
+			else {
+				newTriangle = separateTriangle(triangle, -1);
+			}
+			if (isInFront(centroid) > 0) {
+				geometry1.addToTriangles(newTriangle);
+			}
+			else {
+				geometry2.addToTriangles(newTriangle);
+			}
+		}
+		else {
+			if (isInFront(getCentroid(triangle)) > 0) {
+				geometry1.addToTriangles(triangle);
+			}
+			else {
+				geometry2.addToTriangles(triangle);
+			}
+		}
 	}
 
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
 	vector<geometry> bothGeometrys;
+
+	//if (geometry1.getTriangles().size() == 0 && geometry2.getTriangles().size() == 0) {
+	//	bothGeometrys.push_back(g_geometry);
+	//	return bothGeometrys;
+	//}
 
 	if (geometry1.getTriangles().size() > 0) {
 		bothGeometrys.push_back(geometry1);
@@ -126,11 +164,6 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	if (geometry2.getTriangles().size() > 0) {
 		bothGeometrys.push_back(geometry2);
 	}
-
-	if (geometry1.getTriangles().size() == 0 && geometry2.getTriangles().size() == 0) {
-		bothGeometrys.push_back(g_geometry);
-	}
-
 
 	return bothGeometrys;
 }
@@ -234,14 +267,14 @@ vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> b
 	//If centroidTri lies on same side as the normal.
 	if (distance > 0) {
 		//Draw the new triangles.
-		newTriangles = separateTriangle(triangles, 1);
+		newTriangles = separateTriangles(triangles, 1);
 	}
 	else if (distance < 0) {
-		newTriangles = separateTriangle(triangles, -1);
+		newTriangles = separateTriangles(triangles, -1);
 	}
 	else {
 		//Draw the original (hasn't been cut yet).
-		newTriangles = separateTriangle(triangles, 0);
+		newTriangles = separateTriangles(triangles, 0);
 	}
 
 	return newTriangles;
@@ -281,7 +314,7 @@ Separates a single triangle making up the mesh of the geometry
 triangle translated by normal * direction.
 Quad triangles translated by normal * -direction.
 */
-vector<vector<vec3>> cut::separateTriangle(vector<vector<vec3>> triangles, int direction) {
+vector<vector<vec3>> cut::separateTriangles(vector<vector<vec3>> triangles, int direction) {
 	vector<vector<vec3>> newTriangles = triangles;
 
 	vec3 translateDirection = normal * direction;
@@ -308,6 +341,26 @@ vector<vector<vec3>> cut::separateTriangle(vector<vector<vec3>> triangles, int d
 	}
 
 	return newTriangles;
+}
+
+vector<vec3> cut::separateTriangle(vector<vec3> triangle, int direction) {
+	vector<vec3> newTriangle = triangle;
+
+	vec3 translateDirection = normal * direction;
+
+	//Translation magnitude
+	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
+
+	//Translation direction
+	vec3 translateUnit = translateDirection * (1 / normalMagntde);
+
+	for (vec3 &vertex : newTriangle) {
+		vertex.x = vertex.x + translateUnit.x;
+		vertex.y = vertex.y + translateUnit.y;
+		vertex.z = vertex.z + translateUnit.z;
+	}
+
+	return newTriangle;
 }
 
 /*
