@@ -24,6 +24,9 @@ and return new geometry resulting from the cut.
 */
 vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
 	cutPlane = plane;
+	vec3 normal = findNormal();
+	planeD = calculateDisplacement(normal);
+
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
 		vector<geometry> newGeometrys;
@@ -148,10 +151,7 @@ vec3 cut::findNormal() {
 Returns whether or not the given point is in front or behind the plane.
 */
 int cut::isInFront(vec3 vertex) {
-	vec3 normal = findNormal();
-	float d = calculateDisplacement(normal);
-	planeD = d;
-	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
+	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + planeD);
 }
 /*
 Calculates the displacement of the plane (the 'd' in ax + by + cz + d = 0).
