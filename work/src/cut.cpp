@@ -221,7 +221,7 @@ vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> b
 	triangles.push_back(quadTriangles[1]);
 
 	//The shortest distance between the triangle centroid and the cutPlane.
-	float distance = normal.x*centroidTri.x + normal.y*centroidTri.y + normal.z*centroidTri.z + planeD / (pow((pow(normal.x, 2), pow(normal.y, 2), pow(normal.z, 2)), 0.5));
+	float distance = dot(normal, (centroidTri - cutPlane[0]));
 
 	vector<vector<vec3>> newTriangles;
 
@@ -307,7 +307,7 @@ vector<vector<vec3>> cut::separateTriangle(vector<vector<vec3>> triangles, int d
 /*
 Helper method for generating a line given a point, direction and length.
 */
-vec3 cut::getLine(vec3 position, vec3 direction, int length) {
+vec3 cut::getLine(vec3 position, vec3 direction, float length) {
 	vec3 line(position.x + (direction.x * length), position.y + (direction.y * length), position.z + (direction.z * length));
 	return line;
 }

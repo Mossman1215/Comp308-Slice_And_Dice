@@ -19,7 +19,7 @@ private:
 	std::vector<std::vector<comp308::vec3>> cutTriangle(std::vector<comp308::vec3> frontVertices, std::vector<comp308::vec3> backVertices);
 	std::vector<std::vector<comp308::vec3>> quadToTriangle(std::vector<comp308::vec3> vertices);
 	std::vector<std::vector<comp308::vec3>> separateTriangle(std::vector<std::vector<comp308::vec3>> triangles, int direction);
-	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, int length);
+	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, float length);
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);
 	comp308::vec3 getCentroid(std::vector<comp308::vec3> shape);
 public:

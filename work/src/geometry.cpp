@@ -22,19 +22,19 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-//geometry::geometry(string filename, vector<vector<vec3>> triangles) {
-//	m_color = normalize(random_vec3());
-//	allTriangles = triangles;
-//}
-
-geometry::geometry(string filename){
+geometry::geometry(string filename, vector<vector<vec3>> triangles) {
 	m_color = normalize(random_vec3());
-
-	readOBJ(filename);
-	if (m_triangles.size() > 0) {
-		allTriangles = createDisplayListPoly(filename);
-	}
+	allTriangles = triangles;
 }
+
+//geometry::geometry(string filename){
+//	m_color = normalize(random_vec3());
+//
+//	readOBJ(filename);
+//	if (m_triangles.size() > 0) {
+//		allTriangles = createDisplayListPoly(filename);
+//	}
+//}
 
 void geometry::readOBJ(string filename) {
 
@@ -99,21 +99,6 @@ void geometry::readOBJ(string filename) {
 				while (objLine.good()) {
 					vertex v;
 
-					//-------------------------------------------------------------
-					// [Assignment 1] :
-					// Modify the following to parse the bunny.obj. It has no uv
-					// coordinates so each vertex for each face is in the format
-					// v//vn instead of the usual v/vt/vn.
-					//
-					// Modify the following to parse the dragon.obj. It has no
-					// normals or uv coordinates so the format for each vertex is
-					// v instead of v/vt/vn or v//vn.
-					//
-					// Hint : Check if there is more than one uv or normal in
-					// the uv or normal vector and then parse appropriately.
-					//-------------------------------------------------------------
-
-					// Assignment code (assumes you have all of v/vt/vn for each vertex)
 					objLine >> v.p;		// Scan in position index
 					objLine.ignore(1);	// Ignore the '/' character
 					if (filename != "work/res/assets/bunny.obj") {
@@ -147,9 +132,9 @@ void geometry::readOBJ(string filename) {
 
 vector<triangle> geometry::createDisplayListPoly(string filename) {
 
-	for (triangle t : m_triangles) {
+	vector<triangle> renderTriangles;
 
-		triangle renderTriangle;
+	for (triangle t : m_triangles) {
 
 		t.v[0].n = (m_normals[t.v[0].n].x, m_normals[t.v[0].n].y, m_normals[t.v[0].n].z);
 		t.v[0].t = (m_uvs[t.v[0].t].x, m_uvs[t.v[0].t].y);
@@ -161,11 +146,13 @@ vector<triangle> geometry::createDisplayListPoly(string filename) {
 		t.v[2].t = (m_uvs[t.v[2].t].x, m_uvs[t.v[2].t].y);
 		t.v[2].p = (m_points[t.v[2].p].x, m_points[t.v[2].p].y, m_points[t.v[2].p].z);
 
-		renderTriangle = t;
+		renderTriangles.push_back(t);
 	}
 
 	glEndList();
 	cout << "Finished creating Poly Geometry" << endl;
+
+	return renderTriangles;
 }
 
 void geometry::draw() {
@@ -181,8 +168,19 @@ void geometry::draw() {
 }
 
 void geometry::render() {
+	/*glColor3f(m_color.x, m_color.y, m_color.z);
+	for (triangle triangle : allTriangles) {
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < 3; i++) {
+			glNormal3f(triangle.v[i].n);
+			glTexCoord2f(triangle.v[i].t);
+			glVertex3f(triangle.v[i].p);
+		}
+		glEnd();
+	}*/
+
 	glColor3f(m_color.x, m_color.y, m_color.z);
-	for (vector<triangle> triangle : allTriangles) {
+	for (vector<vec3> triangle : allTriangles) {
 		glBegin(GL_TRIANGLES);
 		glNormal3f(0.0, 0.0, 1.0);
 		for (vec3 vertex : triangle) {
@@ -201,11 +199,3 @@ void geometry::addToTriangles(vector<vec3> triangle) {
 }
 
 geometry::~geometry(){}
-
-/*
-Need to read in the obj file and use structs for the points, uv and normal.
-As well as a struct for the vertex which holds the position, uv and normal.
-After reading in the obj file, instead of using the given display list code, alter it so
-the current vertex takes the information about position vertex and normal. 
-and finally add this information to the triangles which make up the geometry.
-*/

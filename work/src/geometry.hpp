@@ -28,15 +28,15 @@ private:
 	std::vector<comp308::vec3> m_normals;	// Normal list
 	std::vector<triangle> m_triangles;		// Triangle/Face list
 
-	//std::vector<std::vector<comp308::vec3>> allTriangles;	//The tiangles that make up this geometry.
-	std::vector<triangle> allTriangles;
+	std::vector<std::vector<comp308::vec3>> allTriangles;	//The triangles that make up this geometry.
+	//std::vector<triangle> allTriangles;
 	comp308::vec3 m_color;
 public:
-	//geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
-	geometry(std::string filename);
+	geometry();
+	//geometry(std::string filename);
+	geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
 	std::vector<triangle> createDisplayListPoly(std::string filename);
-	geometry();
 	void draw();
 	void render();
 	std::vector<std::vector<comp308::vec3>> getTriangles();
