@@ -34,7 +34,7 @@ private:
 public:
 	geometry();
 	//geometry(std::string filename);
-	geometry(std::string filename, std::vector<std::vector<comp308::vec3>> triangle);
+	geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
 	std::vector<triangle> createDisplayListPoly(std::string filename);
 	void draw();

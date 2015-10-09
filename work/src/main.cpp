@@ -273,6 +273,10 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				allGeometry = g_cut->createCut(plane, g_geometry);
 
+				for (geometry g : g_geometry) {
+					
+				}
+
 				g_geometry = allGeometry;
 			}
 			break;
@@ -372,8 +376,8 @@ int main(int argc, char **argv) {
 	vector<vector<vec3>> triangles;
 	triangles.push_back(vertices);
 
-	geometry *triangle = new geometry("filename", triangles);
-	g_geometry.push_back(*triangle);
+	geometry triangle = geometry(triangles);
+	g_geometry.push_back(triangle);
 
 	//geometry *g_sphere = new geometry("work/res/assets/sphere.obj");
 	//g_geometry.push_back(*g_sphere);

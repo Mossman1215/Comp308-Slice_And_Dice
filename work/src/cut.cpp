@@ -73,43 +73,44 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 			else {
 				vertices = calculateIntersection(frontVertices, backVertices);
 			}
+
+			//Add the new vertices to the old ones
+			for (vec3 vertex : vertices) {
+				frontVertices.push_back(vertex);
+				backVertices.push_back(vertex);
+			}
+
+			vector<vector<vec3>> newTriangles;
+
+			//Actually cut it.
+			newTriangles = cutTriangle(frontVertices, backVertices);
+
+			vector<vector<vec3>> triangles1;
+			triangles1.push_back(newTriangles[0]);
+			vector<vector<vec3>> triangles2;
+			triangles2.push_back(newTriangles[1]);
+			triangles2.push_back(newTriangles[2]);
+
+			vec3 tri1Centroid = getCentroid(newTriangles[0]);
+			vec3 tri2Centroid = getCentroid(newTriangles[1]);
+
+			//Add the new triangles to the corresponding geometry.
+			if (isInFront(tri1Centroid) > 0) {
+				geometry1.addToTriangles(newTriangles[0]);
+			}
+			else {
+				geometry2.addToTriangles(newTriangles[0]);
+			}
+			if (isInFront(tri2Centroid) > 0) {
+				geometry1.addToTriangles(newTriangles[1]);
+				geometry1.addToTriangles(newTriangles[2]);
+			}
+			else {
+				geometry2.addToTriangles(newTriangles[1]);
+				geometry2.addToTriangles(newTriangles[2]);
+			}
 		}
 
-		//Add the new vertices to the old ones
-		for (vec3 vertex : vertices) {
-			frontVertices.push_back(vertex);
-			backVertices.push_back(vertex);
-		}
-
-		vector<vector<vec3>> newTriangles;
-
-		//Actually cut it.
-		newTriangles = cutTriangle(frontVertices, backVertices);
-
-		vector<vector<vec3>> triangles1;
-		triangles1.push_back(newTriangles[0]);
-		vector<vector<vec3>> triangles2;
-		triangles2.push_back(newTriangles[1]);
-		triangles2.push_back(newTriangles[2]);
-
-		vec3 tri1Centroid = getCentroid(newTriangles[0]);
-		vec3 tri2Centroid = getCentroid(newTriangles[1]);
-
-		//Add the new triangles to the corresponding geometry.
-		if (isInFront(tri1Centroid) > 0) {
-			geometry1.addToTriangles(newTriangles[0]);
-		}
-		else {
-			geometry2.addToTriangles(newTriangles[0]);
-		}
-		if (isInFront(tri2Centroid) > 0) {
-			geometry1.addToTriangles(newTriangles[1]);
-			geometry1.addToTriangles(newTriangles[2]);
-		}
-		else {
-			geometry2.addToTriangles(newTriangles[1]);
-			geometry2.addToTriangles(newTriangles[2]);
-		}
 	}
 
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
@@ -122,6 +123,11 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	if (geometry2.getTriangles().size() > 0) {
 		bothGeometrys.push_back(geometry2);
 	}
+
+	if (geometry1.getTriangles().size() == 0 && geometry2.getTriangles().size() == 0) {
+		bothGeometrys.push_back(g_geometry);
+	}
+
 
 	return bothGeometrys;
 }

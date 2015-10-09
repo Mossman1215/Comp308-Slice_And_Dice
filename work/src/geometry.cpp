@@ -22,7 +22,7 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-geometry::geometry(string filename, vector<vector<vec3>> triangles) {
+geometry::geometry(vector<vector<vec3>> triangles) {
 	m_color = normalize(random_vec3());
 	allTriangles = triangles;
 }
@@ -168,6 +168,16 @@ void geometry::draw() {
 }
 
 void geometry::render() {
+	glColor3f(m_color.x, m_color.y, m_color.z);
+	for (vector<vec3> triangle : allTriangles) {
+		glBegin(GL_TRIANGLES);
+		glNormal3f(0.0, 0.0, 1.0);
+		for (vec3 vertex : triangle) {
+			glVertex3f(vertex.x, vertex.y, vertex.z);
+		}
+		glEnd();
+	}
+
 	/*glColor3f(m_color.x, m_color.y, m_color.z);
 	for (triangle triangle : allTriangles) {
 		glBegin(GL_TRIANGLES);
@@ -178,16 +188,6 @@ void geometry::render() {
 		}
 		glEnd();
 	}*/
-
-	glColor3f(m_color.x, m_color.y, m_color.z);
-	for (vector<vec3> triangle : allTriangles) {
-		glBegin(GL_TRIANGLES);
-		glNormal3f(0.0, 0.0, 1.0);
-		for (vec3 vertex : triangle) {
-			glVertex3f(vertex.x, vertex.y, vertex.z);
-		}
-		glEnd();
-	}
 }
 
 vector<vector<vec3>> geometry::getTriangles() {
