@@ -7,19 +7,23 @@
 #include <string>
 #include <vector>
 #include "comp308.hpp"
+#include "geometry.hpp"
 
 class cut {
 private:
+	std::vector<geometry> cutGeometry(geometry geometry);
 	comp308::vec3 findNormal();
 	int isInFront(comp308::vec3 vertex);
 	float calculateDisplacement(comp308::vec3 normal);
 	std::vector<comp308::vec3> calculateIntersection(std::vector<comp308::vec3> v1, std::vector<comp308::vec3> v2);
-	void cutTriangle(std::vector<comp308::vec3> rightVertices, std::vector<comp308::vec3> leftVertices);
+	std::vector<std::vector<comp308::vec3>> cutTriangle(std::vector<comp308::vec3> frontVertices, std::vector<comp308::vec3> backVertices);
 	std::vector<std::vector<comp308::vec3>> quadToTriangle(std::vector<comp308::vec3> vertices);
-	void draw(std::vector<std::vector<comp308::vec3>> triangles);
-	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, int length);
+	std::vector<std::vector<comp308::vec3>> separateTriangles(std::vector<std::vector<comp308::vec3>> triangles, int direction);
+	std::vector<comp308::vec3> separateTriangle(std::vector<comp308::vec3> triangle, int direction);
+	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, float length);
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);
+	comp308::vec3 getCentroid(std::vector<comp308::vec3> shape);
 public:
 	cut();
-	void createCut(std::vector<comp308::vec3> plane);
+	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry);
 };

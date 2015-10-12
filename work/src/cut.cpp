@@ -1,21 +1,3 @@
-/*
-Algorithm so far:
-
-If you can find the interseciton of a line and a plane in space, then the algorithm is as follows:
-
-Find the vertices of the triangle you are cutting, of the 3 vertices 
-2 will be in front on the plane and one will be behind the plane or vice versa.
-Find the equations of the lines representing the two edges that go from the one point on one side
-to the two points on the other side.
-
-From here, the simplest way to find the intersection of the polygon and the plane
-is to find the intersection of the two edges with the plane.
-The two calculated points from the intersection lie on the intersection line between the polygon and the plane.
-From here we have two points in space and we just need to draw a line between them. This is our intersection.
-
-Do this for every polygon. If all 3 points lie on the same side of the plane then the ploygon does not
-intersect with the plane and we shouldn't run the algorithm.
-*/
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -25,67 +7,165 @@ intersect with the plane and we shouldn't run the algorithm.
 
 #include "comp308.hpp"
 #include "cut.hpp"
+#include "geometry.hpp"
 
 using namespace std;
 using namespace comp308;
 
 vector<vec3> cutPlane;
 vec3 normal;
+float planeD;
 
 cut::cut() {}
 
-void cut::createCut(vector<vec3> plane) {
-	/*
-	Currently hard coding in the vertices will have to calculate these on the fly in the finished product.
-	These are the vertices of the current triangle I'm iterating over.
-	*/
-	vector<vec3> vertices;
-	vec3 v1(-5.0, -5.0, 5.0);
-	vec3 v2(-5.0, 5.0, -2.5);
-	vec3 v3(5.0, 5.0, -5.0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-
+/*
+For every geometry currently in the world, cut that geometry if it intersects with the plane
+and return new geometry resulting from the cut.
+*/
+vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
 	cutPlane = plane;
-	
-	vector<vec3> frontVertices;
-	vector<vec3> backVertices;
+	vec3 normal = findNormal();
+	planeD = calculateDisplacement(normal);
 
-	//Separate the vertices.
-	for (vec3 vertex : vertices) {
-		glPushMatrix();
-		glTranslatef(vertex.x, vertex.y, vertex.z);
-		if (isInFront(vertex) > 0) {
-			//glColor3f(1, 0, 0);
-			frontVertices.push_back(vertex);
+	vector<geometry> allGeometry;
+	for (geometry g_geometry : geometrys) {
+		vector<geometry> newGeometrys;
+		newGeometrys = cutGeometry(g_geometry);
+		for (geometry newGeometry : newGeometrys) {
+			allGeometry.push_back(newGeometry);
+		}
+	}
+
+	cout << "Currently rendering ";
+	cout << allGeometry.size();
+	cout << " pieces of geometry" << endl;
+
+	return allGeometry;
+}
+
+/*
+For the given geometry and for every triangle within that geometry, if it intersects with the plane; cut the triangle and
+add the resulting triangles to either one of two geometrys (left of plane or right of plane).
+Return those geometrys.
+*/
+vector<geometry> cut::cutGeometry(geometry g_geometry) {
+	geometry geometry1 = geometry();
+	geometry geometry2 = geometry();
+	int intersects = 0;
+	vector<vector<vec3>> tempTriangles;
+
+	for (vector<vec3> triangle : g_geometry.getTriangles()) {
+		vector<vec3> vertices = triangle;
+
+		vector<vec3> frontVertices;
+		vector<vec3> backVertices;
+
+		//Separate the vertices.
+		for (vec3 vertex : vertices) {
+			if (isInFront(vertex) > 0) {
+				frontVertices.push_back(vertex);
+			}
+			else {
+				backVertices.push_back(vertex);
+			}
+		}
+
+		//Calculate the intersection.
+		if (frontVertices.size() > 0 && backVertices.size() > 0) {	//If triangle intersects with the plane.
+			intersects = 1;
+			if (frontVertices.size() > backVertices.size()) {
+				vertices = calculateIntersection(backVertices, frontVertices);
+			}
+			else {
+				vertices = calculateIntersection(frontVertices, backVertices);
+			}
+
+			//Add the new vertices to the old ones
+			for (vec3 vertex : vertices) {
+				frontVertices.push_back(vertex);
+				backVertices.push_back(vertex);
+			}
+
+			vector<vector<vec3>> newTriangles;
+
+			//Actually cut it.
+			newTriangles = cutTriangle(frontVertices, backVertices);
+
+			vector<vector<vec3>> triangles1;
+			triangles1.push_back(newTriangles[0]);
+			vector<vector<vec3>> triangles2;
+			triangles2.push_back(newTriangles[1]);
+			triangles2.push_back(newTriangles[2]);
+
+			vec3 tri1Centroid = getCentroid(newTriangles[0]);
+			vec3 tri2Centroid = getCentroid(newTriangles[1]);
+
+			//Add the new triangles to the corresponding geometry.
+			if (isInFront(tri1Centroid) > 0) {
+				geometry1.addToTriangles(newTriangles[0]);
+			}
+			else {
+				geometry2.addToTriangles(newTriangles[0]);
+			}
+			if (isInFront(tri2Centroid) > 0) {
+				geometry1.addToTriangles(newTriangles[1]);
+				geometry1.addToTriangles(newTriangles[2]);
+			}
+			else {
+				geometry2.addToTriangles(newTriangles[1]);
+				geometry2.addToTriangles(newTriangles[2]);
+			}
 		}
 		else {
-			//glColor3f(0, 1, 0);
-			backVertices.push_back(vertex);
+			tempTriangles.push_back(triangle);
 		}
-		//glutSolidSphere(0.5, 100, 100);
-		glPopMatrix();
 	}
 
-	//Calculate the intersection.
-	if (frontVertices.size() > 0 && backVertices.size() > 0) {
-		if (frontVertices.size() > backVertices.size()) {
-			vertices = calculateIntersection(backVertices, frontVertices);
+	for (vector<vec3> triangle : tempTriangles) {
+		if (intersects == 1) {
+			vec3 centroid = getCentroid(triangle);
+			float distance = dot(normal, (centroid - cutPlane[0]));
+			vector<vec3> newTriangle;
+			if (distance > 0) {
+				newTriangle = separateTriangle(triangle, 1);
+			}
+			else {
+				newTriangle = separateTriangle(triangle, -1);
+			}
+			if (isInFront(centroid) > 0) {
+				geometry1.addToTriangles(newTriangle);
+			}
+			else {
+				geometry2.addToTriangles(newTriangle);
+			}
 		}
 		else {
-			vertices = calculateIntersection(frontVertices, backVertices);
+			if (isInFront(getCentroid(triangle)) > 0) {
+				geometry1.addToTriangles(triangle);
+			}
+			else {
+				geometry2.addToTriangles(triangle);
+			}
 		}
 	}
 
-	//Add the new vertices to the old ones
-	for (vec3 vertex : vertices) {
-		frontVertices.push_back(vertex);
-		backVertices.push_back(vertex);
+	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
+	vector<geometry> bothGeometrys;
+
+	//if (geometry1.getTriangles().size() == 0 && geometry2.getTriangles().size() == 0) {
+	//	bothGeometrys.push_back(g_geometry);
+	//	return bothGeometrys;
+	//}
+
+	if (geometry1.getTriangles().size() > 0) {
+		bothGeometrys.push_back(geometry1);
 	}
 
-	//Actually cut it.
-	cutTriangle(frontVertices, backVertices);
+	if (geometry2.getTriangles().size() > 0) {
+		bothGeometrys.push_back(geometry2);
+	}
+
+	return bothGeometrys;
 }
 
 /*
@@ -104,9 +184,7 @@ vec3 cut::findNormal() {
 Returns whether or not the given point is in front or behind the plane.
 */
 int cut::isInFront(vec3 vertex) {
-	vec3 normal = findNormal();
-	float d = calculateDisplacement(normal);
-	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + d);
+	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + planeD);
 }
 /*
 Calculates the displacement of the plane (the 'd' in ax + by + cz + d = 0).
@@ -147,80 +225,59 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	vec3 intersectVertex = getLine(v1[0], vector1Unit, t);
 	vec3 intersectVertex2 = getLine(v1[0], vector2Unit, t2);
 
-	glColor3f(1, 0, 0);
-	glLineWidth(4);
-	glBegin(GL_LINES);
-	glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	glEnd();
-
 	vector<vec3> vertices;
 	vertices.push_back(intersectVertex);
 	vertices.push_back(intersectVertex2);
 
 	return vertices;
-
-	//glColor3f(1, 1, 0);
-	//glLineWidth(8);
-	//glBegin(GL_LINES);
-	//glVertex3f(line1.x, line1.y, line1.z);
-	//glVertex3f(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	//glVertex3f(line2.x, line2.y, line2.z);
-	//glVertex3f(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	//glEnd();
-
-	/*glPushMatrix();
-	glTranslatef(intersectVertex.x, intersectVertex.y, intersectVertex.z);
-	glutSolidSphere(0.25, 100, 100);
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(intersectVertex2.x, intersectVertex2.y, intersectVertex2.z);
-	glutSolidSphere(0.25, 100, 100);
-	glPopMatrix();*/
 }
 
-void cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
-	//The centroid of the triangle.
-	//GLfloat centerX = (triangle[0].x + triangle[1].x + triangle[2].x) / 3;
-	//GLfloat centerY = (triangle[0].y + triangle[1].y + triangle[2].y) / 3;
-	//GLfloat centerZ = (triangle[0].z + triangle[1].z + triangle[2].z) / 3;
+/*
+Given a set of vertices that make up a triangle and a quad. Cut the triangle that is made up of
+these shapes.
+*/
+vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
+	vector<vec3> quad;
+	vector<vec3> triangle;
 
-	//vec3 centroidTri(centerX, centerY, centerZ);
-
-	////The centroid of the quad.
-	//centerX = (quad[0].x + quad[1].x + quad[2].x + quad[3].x) / 3;
-	//centerY = (quad[0].y + quad[1].y + quad[2].y + quad[3].y) / 3;
-	//centerZ = (quad[0].z + quad[1].z + quad[2].z + quad[3].z) / 3;
-
-	//vec3 centroidQuad(centerX, centerY, centerZ);
-
-	vector<vec3> left;
-	vector<vec3> right;
-
-	//Separate the vertices into left and right.
-	if (frontVertices[0].x < backVertices[0].x) {
-		left = frontVertices;
-		right = backVertices;
+	if (frontVertices.size() > backVertices.size()) {
+		quad = frontVertices;
+		triangle = backVertices;
 	}
 	else {
-		left = backVertices;
-		right = frontVertices;
+		quad = backVertices;
+		triangle = frontVertices;
 	}
 
-	//Convert quad to two triangles
+	vec3 centroidTri = getCentroid(triangle);
+
+	//Convert quad to triangles
+	vector<vector<vec3>> quadTriangles = quadToTriangle(quad);
+
 	vector<vector<vec3>> triangles;
-	if (left.size() > right.size()) {
-		triangles = quadToTriangle(left);
-		triangles.push_back(right);
+	triangles.push_back(triangle);
+	triangles.push_back(quadTriangles[0]);
+	triangles.push_back(quadTriangles[1]);
+
+	//The shortest distance between the triangle centroid and the cutPlane.
+	float distance = dot(normal, (centroidTri - cutPlane[0]));
+
+	vector<vector<vec3>> newTriangles;
+
+	//If centroidTri lies on same side as the normal.
+	if (distance > 0) {
+		//Draw the new triangles.
+		newTriangles = separateTriangles(triangles, 1);
+	}
+	else if (distance < 0) {
+		newTriangles = separateTriangles(triangles, -1);
 	}
 	else {
-		triangles = quadToTriangle(right);
-		triangles.push_back(left);
+		//Draw the original (hasn't been cut yet).
+		newTriangles = separateTriangles(triangles, 0);
 	}
 
-	//Draw the new triangles.
-	draw(triangles);
+	return newTriangles;
 }
 /*
  Converts the given quad into two triangles.
@@ -253,31 +310,63 @@ vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
 }
 
 /*
-Draws the newly cut triangle.
+Separates a single triangle making up the mesh of the geometry
+triangle translated by normal * direction.
+Quad triangles translated by normal * -direction.
 */
-void cut::draw(vector<vector<vec3>> triangles) {
-	glColor3f(0, 1, 1);
-	for (vector<vec3> triangle : triangles) {
-		glBegin(GL_TRIANGLES);
-		glNormal3f(0.0, 0.0, 1.0);
-		for (vec3 vertex : triangle) {
-			glVertex3f(vertex.x, vertex.y, vertex.z);
-		}
-		glEnd();
+vector<vector<vec3>> cut::separateTriangles(vector<vector<vec3>> triangles, int direction) {
+	vector<vector<vec3>> newTriangles = triangles;
 
-		for (vec3 vertex : triangle) {
-			glPushMatrix();
-			glTranslatef(vertex.x, vertex.y, vertex.z);
-			glutSolidSphere(0.3, 100, 100);
-			glPopMatrix();
+	vec3 translateDirection = normal * direction;
+
+	//Translation magnitude
+	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
+
+	//Translation direction
+	vec3 translateUnit = translateDirection * (1 / normalMagntde);
+
+	for (int i = 0; i < newTriangles.size(); i++) {
+		for (vec3 &vertex : newTriangles[i]) {
+			if (i == 0 && direction != 0) {
+				vertex.x = vertex.x + translateUnit.x;
+				vertex.y = vertex.y + translateUnit.y;
+				vertex.z = vertex.z + translateUnit.z;
+			}
+			else if (direction != 0) {
+				vertex.x = vertex.x + translateUnit.x * -1;
+				vertex.y = vertex.y + translateUnit.y * -1;
+				vertex.z = vertex.z + translateUnit.z * -1;
+			}
 		}
 	}
+
+	return newTriangles;
+}
+
+vector<vec3> cut::separateTriangle(vector<vec3> triangle, int direction) {
+	vector<vec3> newTriangle = triangle;
+
+	vec3 translateDirection = normal * direction;
+
+	//Translation magnitude
+	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
+
+	//Translation direction
+	vec3 translateUnit = translateDirection * (1 / normalMagntde);
+
+	for (vec3 &vertex : newTriangle) {
+		vertex.x = vertex.x + translateUnit.x;
+		vertex.y = vertex.y + translateUnit.y;
+		vertex.z = vertex.z + translateUnit.z;
+	}
+
+	return newTriangle;
 }
 
 /*
 Helper method for generating a line given a point, direction and length.
 */
-vec3 cut::getLine(vec3 position, vec3 direction, int length) {
+vec3 cut::getLine(vec3 position, vec3 direction, float length) {
 	vec3 line(position.x + (direction.x * length), position.y + (direction.y * length), position.z + (direction.z * length));
 	return line;
 }
@@ -291,20 +380,14 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 }
 
 /*
-My algorithm for separation of triangles around plane in three dimensions:
-
-We need to translate the resulting meshes by some scaler of the normal vector.
-In order to do this we first have to know which normal corresponds to what mesh.
-
-Solving this problem goes as follows:
-
-If the vector between the centroids of the two cut meshes (quad and triangle)
-intersects the normal vector or if the vector is the normal vector (has the same unit vector)
-then that normal corresponds to the mesh having the centroid which defined the direction of
-the vector.
-
-Then all we need to do is translate each vertex in the mesh by some scaler of that normal,
-and translate the other mesh by the same but negative scaler of the same normal.
-
-We then run the quadToTriangle method on the quad and draw the result.
+Helper method for finding the centroid of a shape.
 */
+vec3 cut::getCentroid(vector<vec3> shape) {
+	GLfloat centerX = (shape[0].x + shape[1].x + shape[2].x) / 3;
+	GLfloat centerY = (shape[0].y + shape[1].y + shape[2].y) / 3;
+	GLfloat centerZ = (shape[0].z + shape[1].z + shape[2].z) / 3;
+
+	vec3 centroid(centerX, centerY, centerZ);
+
+	return centroid;
+}

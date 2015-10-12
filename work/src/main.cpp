@@ -17,7 +17,7 @@
 #include <iostream>
 #include <string>
 #include "comp308.hpp"
-#include "display.hpp"
+#include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
 
@@ -60,7 +60,7 @@ vec3 cut_proj_1;
 vec3 cut_proj_2;
 int g_start_time=0;
 float g_delta=0;
-display *g_display = nullptr;
+vector<geometry> g_geometry;
 cut *g_cut = nullptr;
 Rigidbody* box;
 Rigidbody* box2;
@@ -132,7 +132,10 @@ void draw() {
 
 
 	// Render geometry
-	//g_display->draw();
+	for (geometry Geometry : g_geometry) {
+		Geometry.draw();
+	}
+
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
@@ -156,14 +159,6 @@ void draw() {
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
 	glDisable(GL_BLEND);
-
-	//render cut
-	vector<vec3> plane;
-	plane.push_back(cut_proj_1);
-	plane.push_back(cut_proj_2);
-	plane.push_back(cut_draw_2);
-
-	g_cut->createCut(plane);
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
@@ -274,8 +269,22 @@ void mouseCallback(int button, int state, int x, int y) {
 			if (!g_drawMouse) {
 				cut_draw_2 = myUnProject(x, y, 0);
 				cut_proj_2 = myUnProject(x, y, 1);
-				cout << cut_draw_1 << cut_draw_2 << endl;
-				cout << cut_proj_1 << cut_proj_2 << endl;
+
+				//Create cut upon mouse release.
+				vector<vec3> plane;
+				plane.push_back(cut_proj_1);
+				plane.push_back(cut_proj_2);
+				plane.push_back(cut_draw_2);
+
+				vector<geometry> allGeometry;
+
+				allGeometry = g_cut->createCut(plane, g_geometry);
+
+				for (geometry g : g_geometry) {
+					
+				}
+
+				g_geometry = allGeometry;
 			}
 			break;
 
@@ -364,7 +373,22 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	g_display = new display();
+	vector<vec3> vertices;
+	vec3 v1(-5.0, -5.0, 5.0);
+	vec3 v2(-5.0, 5.0, -2.5);
+	vec3 v3(5.0, 5.0, -5.0);
+	vertices.push_back(v1);
+	vertices.push_back(v2);
+	vertices.push_back(v3);
+	vector<vector<vec3>> triangles;
+	triangles.push_back(vertices);
+
+	geometry triangle = geometry(triangles);
+	g_geometry.push_back(triangle);
+
+	//geometry *g_sphere = new geometry("work/res/assets/sphere.obj");
+	//g_geometry.push_back(*g_sphere);
+
 	g_cut = new cut();
 	vector<vec3> vertex;
 	vertex.push_back(vec3(-1,1,-1));
