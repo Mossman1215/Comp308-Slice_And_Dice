@@ -20,7 +20,7 @@ public:
 	comp308::vec3 update(float);
 	void rollBack(float);
         TAABB boundary;
-  int uid;
+	comp308::vec3 position;
   Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass){
 		/*set inertia tensor based on mesh data*/
 		position = base;
@@ -39,7 +39,6 @@ private:
 	double mass;
 	comp308::mat3 inertiaTensor;
 	comp308::mat3 inverseInertiaTensor;
-	comp308::vec3 position;
 	comp308::vec4 rotation;
 	comp308::vec3 linearVelocity;//current velocity
 	comp308::vec3 angularVelocity;//current angular velocity

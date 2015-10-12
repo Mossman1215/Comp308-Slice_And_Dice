@@ -250,6 +250,12 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	case 'k':
 		box2->addForce(vec3(0,-1,0));
 		break;
+	case 'n':
+		box2->addForce(vec3(0,0,-1));
+		break;
+	case 'm':
+		box2->addForce(vec3(0,0,1));
+		break;
 	}
 }
 
@@ -414,8 +420,6 @@ int main(int argc, char **argv) {
 	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
 	physics->addRigidbody(box2);
 	physics->addRigidbody(box);
-	box->addForce(vec3(0,-9.81,0));
-	box2->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();

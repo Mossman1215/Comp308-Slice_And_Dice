@@ -11,6 +11,7 @@ void Rigidbody::addForce(vec3 force){
 
 comp308::vec3 Rigidbody::update(float delta){
 	//apply forces
+	addForce(vec3(0,-9.81*delta,0));
 	vec3 acceleration = force/mass;
 	//change position
 	if(position.y + (acceleration.y * delta) > 0){
@@ -21,6 +22,7 @@ comp308::vec3 Rigidbody::update(float delta){
 	}else {
 		addForce(vec3(0,-force.y,0));
 	}
+	force = force*0.99;
 	boundary.position = position;
 	return position;
 }
@@ -38,12 +40,26 @@ void Physics::checkCollisions(float delta){
 	     Collision c;
 	     c.a = rb1;
 	     c.b = rb2;
-	     //collisions.push_back(c);
+	     collisions.push_back(c);
 	     cout << "collision detected rb1.pos:" << rb1->boundary.position << " rb2.pos "<< rb2->boundary.position<< endl;
            }
       }  
     }
   }
+  for(unsigned int k=0;k<collisions.size();k++){
+	Collision c =  collisions[k];
+	vec3 forceA;
+	forceA = c.a->position - c.b->position;
+	cout <<"forceA"<<forceA<< endl;
+	float r = length(forceA);
+	c.a->addForce(forceA);
+	vec3 forceB;
+	forceB = c.b->position - c.a->position;
+	c.b->addForce(forceB);
+	cout <<"forceB"<<forceB<< endl;
+	
+  }
+  collisions.clear();
   //for each object in collisions list
   //check all vertex & edge & face for separating plane if they fail bounding box check
   //check that vertex or edge ,delta + tolerance, changes the separating plane, meaning that they are no longer disjoint?
@@ -53,7 +69,7 @@ void Physics::checkCollisions(float delta){
 void Physics::initialiseCollisions(){
   //generate intial witnesses (separating planes)
 }
-bool Physics::AABBtoAABB(TAABB& tBox1, TAABB& tBox2){
+bool Physics::AABBtoAABB(const TAABB& tBox1,const TAABB& tBox2){
 	float x1 = tBox1.position.x;
 	float y1 = tBox1.position.y;
 	float z1 = tBox1.position.z;
