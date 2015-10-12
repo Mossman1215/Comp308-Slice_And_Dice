@@ -373,11 +373,11 @@ int main(int argc, char **argv) {
 	vertex.push_back(vec3(1,-1,1));
 	physics = new Physics();
 	box = new Rigidbody(vec3(0,10,0),vertex,1);
-	box2 = new Rigidbody(vec3(0.5,10,0),vertex,1);
+	box2 = new Rigidbody(vec3(1,10,0),vertex,1);
 	physics->addRigidbody(*box2);
 	physics->addRigidbody(*box);
 	box->addForce(vec3(0,-9.81,0));
-	box2->addForce(vec3(0,-9.81,0));
+	box2->addForce(vec3(0,-9.81,-1));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();

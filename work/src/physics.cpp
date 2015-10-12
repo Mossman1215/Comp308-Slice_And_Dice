@@ -56,6 +56,8 @@ void Physics::initialiseCollisions(){
 }
 bool Physics::AABBtoAABB(const TAABB& tBox1, const TAABB& tBox2)
 {
+  cout <<"tBox1: " << tBox1.m_vecMin <<","<< tBox1.m_vecMax;
+  cout <<"tBox2: " << tBox2.m_vecMin <<","<< tBox2.m_vecMax;
   //Check if Box1's max is greater than Box2's min and Box1's min is less than Box2's max
   return(tBox1.m_vecMax.x > tBox2.m_vecMin.x &&
     tBox1.m_vecMin.x < tBox2.m_vecMax.x &&

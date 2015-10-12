@@ -44,7 +44,7 @@ private:
     float min = -std::numeric_limits<float>::max();
     comp308::vec3 max(min,min,min);
     for(int i =0; i<mesh.size();i++){
-      comp308::vec3 vert = mesh[i];
+      comp308::vec3 vert = mesh[i] + position;
       if(vert.x > max.x){
 	max.x = vert.x;
       }
@@ -61,7 +61,7 @@ private:
     float max = std::numeric_limits<float>::max();
     comp308::vec3 min(max,max,max);
     for(int i =0; i<mesh.size();i++){
-      comp308::vec3 vert = mesh[i];
+      comp308::vec3 vert = mesh[i]+position;
       if(vert.x < min.x){
 	min.x = vert.x;
       }
