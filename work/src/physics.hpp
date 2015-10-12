@@ -1,12 +1,18 @@
+/*
+ * physics module for comp308 final project
+ * 2015 Tomas Cantwell cantwetoma@myvuw.ac.nz
+ * using code from Studio freya http://studiofreya.com/3d-math-and-physics/simple-aabb-vs-aabb-collision-detection/
+ * and Miguel Casillas http://www.miguelcasillas.com/?p=30
+ */
 #include "comp308.hpp"
 #include <vector>
 #include <limits>
-#include <uuid/uuid.h>
 
 struct TAABB
 {
   comp308::vec3 m_vecMax;
   comp308::vec3 m_vecMin;
+  comp308::vec3 position;
 };
 
 class Rigidbody{
@@ -25,6 +31,7 @@ public:
 		findMax();
 		  //find min values for x,y,z
 		findMin();
+		boundary.position = base;
 	};
 	void addForce(comp308::vec3 force);
 	void addTorque(comp308::vec4 quat);
@@ -44,7 +51,7 @@ private:
     float min = -std::numeric_limits<float>::max();
     comp308::vec3 max(min,min,min);
     for(int i =0; i<mesh.size();i++){
-      comp308::vec3 vert = mesh[i] + position;
+      comp308::vec3 vert = mesh[i];
       if(vert.x > max.x){
 	max.x = vert.x;
       }
@@ -61,7 +68,7 @@ private:
     float max = std::numeric_limits<float>::max();
     comp308::vec3 min(max,max,max);
     for(int i =0; i<mesh.size();i++){
-      comp308::vec3 vert = mesh[i]+position;
+      comp308::vec3 vert = mesh[i];
       if(vert.x < min.x){
 	min.x = vert.x;
       }
@@ -95,9 +102,9 @@ public:
   std::vector<comp308::vec3> rollBack(float);
   void checkCollisions(float delta);
   void initialiseCollisions();
-  bool  AABBtoAABB(const TAABB& tBox1, const TAABB& tBox2);
-  void addRigidbody(Rigidbody);
+  bool  AABBtoAABB(const TAABB& tBox1,const TAABB& tBox2);
+  void addRigidbody(Rigidbody*);
 private:
 	float currentTime;
-	std::vector<Rigidbody> objects;
+	std::vector<Rigidbody*> objects;
 };

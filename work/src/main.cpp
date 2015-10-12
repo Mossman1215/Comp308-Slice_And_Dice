@@ -237,6 +237,20 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	if(key ==' '){
 		g_paused= !g_paused;
 	}
+	switch(key){
+	case 'j':
+		box2->addForce(vec3(-1,0,0));
+		break;
+	case 'l':
+		box2->addForce(vec3(1,0,0));
+		break;
+	case 'i':
+		box2->addForce(vec3(0,1,0));
+		break;
+	case 'k':
+		box2->addForce(vec3(0,-1,0));
+		break;
+	}
 }
 
 
@@ -340,7 +354,7 @@ int main(int argc, char **argv) {
 
 	// Initialise window size and create window
 	glutInitWindowSize(g_winWidth, g_winHeight);
-	g_mainWindow = glutCreateWindow("COMP308 Assignment 2");
+	g_mainWindow = glutCreateWindow("COMP308 Final Project");
 
 
 	// Initilise GLEW
@@ -397,11 +411,11 @@ int main(int argc, char **argv) {
 	vertex.push_back(vec3(1,-1,1));
 	physics = new Physics();
 	box = new Rigidbody(vec3(0,10,0),vertex,1);
-	box2 = new Rigidbody(vec3(1,10,0),vertex,1);
-	physics->addRigidbody(*box2);
-	physics->addRigidbody(*box);
+	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
+	physics->addRigidbody(box2);
+	physics->addRigidbody(box);
 	box->addForce(vec3(0,-9.81,0));
-	box2->addForce(vec3(0,-9.81,-1));
+	box2->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();

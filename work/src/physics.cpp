@@ -21,8 +21,7 @@ comp308::vec3 Rigidbody::update(float delta){
 	}else {
 		addForce(vec3(0,-force.y,0));
 	}
-	findMax();
-	findMin();
+	boundary.position = position;
 	return position;
 }
 void Physics::checkCollisions(float delta){
@@ -31,16 +30,16 @@ void Physics::checkCollisions(float delta){
   //update vertex positions
   vector<Collision> collisions;
   for(int i =0 ;i<objects.size();i++){
-    Rigidbody rb1 = objects[i];
+    Rigidbody* rb1 = objects[i];
     for(int j = 0; j <objects.size();j++){
-      Rigidbody rb2 = objects[j];
+      Rigidbody* rb2 = objects[j];
       if(j!=i){
-           if(AABBtoAABB(rb1.boundary,rb2.boundary)){
+          if(AABBtoAABB(rb1->boundary,rb2->boundary)){
 	     Collision c;
-	     c.a = &rb1;
-	     c.b = &rb2;
-	     collisions.push_back(c);
-	     cout << "collision detected" << endl;
+	     c.a = rb1;
+	     c.b = rb2;
+	     //collisions.push_back(c);
+	     cout << "collision detected rb1.pos:" << rb1->boundary.position << " rb2.pos "<< rb2->boundary.position<< endl;
            }
       }  
     }
@@ -54,19 +53,21 @@ void Physics::checkCollisions(float delta){
 void Physics::initialiseCollisions(){
   //generate intial witnesses (separating planes)
 }
-bool Physics::AABBtoAABB(const TAABB& tBox1, const TAABB& tBox2)
-{
-  cout <<"tBox1: " << tBox1.m_vecMin <<","<< tBox1.m_vecMax;
-  cout <<"tBox2: " << tBox2.m_vecMin <<","<< tBox2.m_vecMax;
-  //Check if Box1's max is greater than Box2's min and Box1's min is less than Box2's max
-  return(tBox1.m_vecMax.x > tBox2.m_vecMin.x &&
-    tBox1.m_vecMin.x < tBox2.m_vecMax.x &&
-	 tBox1.m_vecMax.y > tBox2.m_vecMin.y &&
-    tBox1.m_vecMin.y < tBox2.m_vecMax.y &&
-	 tBox1.m_vecMax.z > tBox2.m_vecMin.z &&
-	 tBox1.m_vecMin.z < tBox2.m_vecMax.z);
-  //If not, it will return false
+bool Physics::AABBtoAABB(TAABB& tBox1, TAABB& tBox2){
+	float x1 = tBox1.position.x;
+	float y1 = tBox1.position.y;
+	float z1 = tBox1.position.z;
+	float x2 = tBox2.position.x;
+	float y2 = tBox2.position.y;
+	float z2 = tBox2.position.z;
+	return(x1+tBox1.m_vecMax.x > x2+tBox2.m_vecMin.x &&
+	           x1+tBox1.m_vecMin.x < x2+tBox2.m_vecMax.x &&
+	       y1+tBox1.m_vecMax.y > y2+tBox2.m_vecMin.y &&
+	           y1+tBox1.m_vecMin.y < y2+tBox2.m_vecMax.y &&
+	       z1+tBox1.m_vecMax.z > z2+tBox2.m_vecMin.z &&
+	       z1+tBox1.m_vecMin.z < z2+tBox2.m_vecMax.z);
 }
-void Physics::addRigidbody(Rigidbody r){
+
+void Physics::addRigidbody(Rigidbody* r){
   objects.push_back(r);
 }
