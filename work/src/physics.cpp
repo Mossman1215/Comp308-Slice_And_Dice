@@ -21,6 +21,8 @@ comp308::vec3 Rigidbody::update(float delta){
 		}
 	}else {
 		addForce(vec3(0,-force.y,0));
+		position = position + ((force/mass)*delta);
+		force = force*0.9;
 	}
 	force = force*0.99;
 	boundary.position = position;
@@ -46,16 +48,19 @@ void Physics::checkCollisions(float delta){
       }  
     }
   }
+  //resolve collisions
   for(unsigned int k=0;k<collisions.size();k++){
 	Collision c =  collisions[k];
 	vec3 forceA;
 	forceA = c.a->position - c.b->position;
 	cout <<"forceA"<<forceA<< endl;
+	forceA = normalize(forceA);
 	float r = length(forceA);
-	c.a->addForce(forceA);
+	c.a->addForce(forceA/(r*r));
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
-	c.b->addForce(forceB);
+	forceB = normalize(forceB);
+	c.b->addForce(forceB/(r*r));
 	cout <<"forceB"<<forceB<< endl;
 	
   }

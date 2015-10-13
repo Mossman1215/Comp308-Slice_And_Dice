@@ -36,7 +36,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 100;
+float g_zfar = 1000;
 
 
 // Mouse controlled Camera values
@@ -77,7 +77,6 @@ void initLight() {
 	glLightfv(GL_LIGHT0, GL_POSITION, direction);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffintensity);
 	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);	
-	
 	
 	glEnable(GL_LIGHT0);
 }
@@ -133,6 +132,7 @@ void draw() {
 
 	// Render geometry
 	for (geometry Geometry : g_geometry) {
+		//get position from rigidbody corresponding to this geometry object
 		Geometry.draw();
 	}
 
@@ -303,7 +303,6 @@ void mouseCallback(int button, int state, int x, int y) {
 				for (geometry g : g_geometry) {
 					
 				}
-
 				g_geometry = allGeometry;
 			}
 			break;
@@ -405,9 +404,6 @@ int main(int argc, char **argv) {
 
 	geometry triangle = geometry(triangles);
 	g_geometry.push_back(triangle);
-
-	//geometry *g_sphere = new geometry("work/res/assets/sphere.obj");
-	//g_geometry.push_back(*g_sphere);
 
 	g_cut = new cut();
 	vector<vec3> vertex;
