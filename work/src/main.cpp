@@ -300,9 +300,6 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				allGeometry = g_cut->createCut(plane, g_geometry);
 
-				for (geometry g : g_geometry) {
-					
-				}
 				g_geometry = allGeometry;
 			}
 			break;
@@ -392,18 +389,8 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	vector<vec3> vertices;
-	vec3 v1(-5.0, -5.0, 5.0);
-	vec3 v2(-5.0, 5.0, -2.5);
-	vec3 v3(5.0, 5.0, -5.0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-	vector<vector<vec3>> triangles;
-	triangles.push_back(vertices);
-
-	geometry triangle = geometry(triangles);
-	g_geometry.push_back(triangle);
+	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
+	g_geometry.push_back(g_sphere);
 
 	g_cut = new cut();
 	vector<vec3> vertex;
