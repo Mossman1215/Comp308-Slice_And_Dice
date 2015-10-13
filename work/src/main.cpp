@@ -20,6 +20,7 @@
 #include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
+#include <map>
 
 using namespace std;
 using namespace comp308;
@@ -66,6 +67,7 @@ Rigidbody* box;
 Rigidbody* box2;
 Physics* physics;
 bool g_paused = false;
+map <geometry*,Rigidbody*>geo_to_rigid;
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -132,8 +134,11 @@ void draw() {
 
 	// Render geometry
 	for (geometry Geometry : g_geometry) {
+		glPushMatrix();
 		//get position from rigidbody corresponding to this geometry object
+		//geo_to_rigid.get(Geometry);
 		Geometry.draw();
+		glPopMatrix();
 	}
 
 	glPushMatrix();
@@ -297,10 +302,13 @@ void mouseCallback(int button, int state, int x, int y) {
 				plane.push_back(cut_draw_2);
 
 				vector<geometry> allGeometry;
-
+				
 				allGeometry = g_cut->createCut(plane, g_geometry);
-
+				
 				g_geometry = allGeometry;
+				//for all geometry objects from geo_to_rigid.size to g_geometry.size
+				//add the new ones to geo_to_rigid
+
 			}
 			break;
 
