@@ -22,19 +22,20 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-geometry::geometry(vector<vector<vec3>> triangles) {
-	m_color = normalize(random_vec3());
-	allTriangles = triangles;
-}
-
-//geometry::geometry(string filename){
+//geometry::geometry(vector<vector<vec3>> triangles) {
 //	m_color = normalize(random_vec3());
-//
-//	readOBJ(filename);
-//	if (m_triangles.size() > 0) {
-//		allTriangles = createDisplayListPoly(filename);
-//	}
+//	allTriangles = triangles;
 //}
+
+geometry::geometry(string filename){
+	m_color = normalize(random_vec3());
+
+	readOBJ(filename);
+	if (m_triangles.size() > 0) {
+		//allTriangles = createDisplayListPoly();
+		createDisplayListPoly();
+	}
+}
 
 void geometry::readOBJ(string filename) {
 
@@ -99,13 +100,30 @@ void geometry::readOBJ(string filename) {
 				while (objLine.good()) {
 					vertex v;
 
-					objLine >> v.p;		// Scan in position index
+					//-------------------------------------------------------------
+					// [Assignment 1] :
+					// Modify the following to parse the bunny.obj. It has no uv
+					// coordinates so each vertex for each face is in the format
+					// v//vn instead of the usual v/vt/vn.
+					//
+					// Modify the following to parse the dragon.obj. It has no
+					// normals or uv coordinates so the format for each vertex is
+					// v instead of v/vt/vn or v//vn.
+					//
+					// Hint : Check if there is more than one uv or normal in
+					// the uv or normal vector and then parse appropriately.
+					//-------------------------------------------------------------
+
+					// Assignment code (assumes you have all of v/vt/vn for each vertex)
+					int i;
+					objLine >> i;		// Scan in position index
+					v.p = m_points[i];
 					objLine.ignore(1);	// Ignore the '/' character
-					if (filename != "work/res/assets/bunny.obj") {
-						objLine >> v.t;		// Scan in uv (texture coord) index
-					}
+					objLine >> i;		// Scan in uv (texture coord) index
+					v.t = m_uvs[i];
 					objLine.ignore(1);	// Ignore the '/' character
-					objLine >> v.n;		// Scan in normal index
+					objLine >> i;		// Scan in normal index
+					v.n = m_normals[i];
 
 					verts.push_back(v);
 				}
@@ -128,31 +146,44 @@ void geometry::readOBJ(string filename) {
 	cout << m_uvs.size() - 1 << " uv coords" << endl;
 	cout << m_normals.size() - 1 << " normals" << endl;
 	cout << m_triangles.size() << " faces" << endl;
+
+
+	//// If we didn't have any normals, create them
+	//if (m_normals.size() <= 1) createNormals();
 }
 
-vector<triangle> geometry::createDisplayListPoly(string filename) {
+void geometry::createDisplayListPoly() {
 
-	vector<triangle> renderTriangles;
+	// Delete old list if there is one
+	if (m_displayListPoly) glDeleteLists(m_displayListPoly, 1);
+
+	// Create a new list
+	cout << "Creating Poly Geometry" << endl;
+	m_displayListPoly = glGenLists(1);
+	glNewList(m_displayListPoly, GL_COMPILE);
+
+	glBegin(GL_TRIANGLES);
+
+	cout << m_triangles.size() << endl;
 
 	for (triangle t : m_triangles) {
 
-		t.v[0].n = (m_normals[t.v[0].n].x, m_normals[t.v[0].n].y, m_normals[t.v[0].n].z);
-		t.v[0].t = (m_uvs[t.v[0].t].x, m_uvs[t.v[0].t].y);
-		t.v[0].p = (m_points[t.v[0].p].x, m_points[t.v[0].p].y, m_points[t.v[0].p].z);
-		t.v[1].n = (m_normals[t.v[1].n].x, m_normals[t.v[1].n].y, m_normals[t.v[1].n].z);
-		t.v[1].t = (m_uvs[t.v[1].t].x, m_uvs[t.v[1].t].y);
-		t.v[1].p = (m_points[t.v[1].p].x, m_points[t.v[1].p].y, m_points[t.v[1].p].z);
-		t.v[2].n = (m_normals[t.v[2].n].x, m_normals[t.v[2].n].y, m_normals[t.v[2].n].z);
-		t.v[2].t = (m_uvs[t.v[2].t].x, m_uvs[t.v[2].t].y);
-		t.v[2].p = (m_points[t.v[2].p].x, m_points[t.v[2].p].y, m_points[t.v[2].p].z);
+		glNormal3f(t.v[0].n.x, t.v[0].n.y, t.v[0].n.z);
+		glTexCoord2f(t.v[0].t.x, t.v[0].t.y);
+		glVertex3f(t.v[0].p.x, t.v[0].p.y, t.v[0].p.z);
 
-		renderTriangles.push_back(t);
+		glNormal3f(t.v[1].n.x, t.v[1].n.y, t.v[1].n.z);
+		glTexCoord2f(t.v[1].t.x, t.v[1].t.y);
+		glVertex3f(t.v[1].p.x, t.v[1].p.y, t.v[1].p.z);
+
+		glNormal3f(t.v[2].n.x, t.v[2].n.y, t.v[2].n.z);
+		glTexCoord2f(t.v[2].t.x, t.v[2].t.y);
+		glVertex3f(t.v[2].p.x, t.v[2].p.y, t.v[2].p.z);
 	}
+	glEnd();
 
 	glEndList();
 	cout << "Finished creating Poly Geometry" << endl;
-
-	return renderTriangles;
 }
 
 void geometry::draw() {
@@ -168,34 +199,65 @@ void geometry::draw() {
 }
 
 void geometry::render() {
-	glColor3f(m_color.x, m_color.y, m_color.z);
-	for (vector<vec3> triangle : allTriangles) {
-		glBegin(GL_TRIANGLES);
-		glNormal3f(0.0, 0.0, 1.0);
-		for (vec3 vertex : triangle) {
-			glVertex3f(vertex.x, vertex.y, vertex.z);
-		}
-		glEnd();
+	glShadeModel(GL_SMOOTH);
+	glCallList(m_displayListPoly);
+	//glColor3f(m_color.x, m_color.y, m_color.z);
+	//glBegin(GL_TRIANGLES);
+	//for (triangle t : allTriangles) {
+	//	glNormal3f(t.v[0].n, t.v[1].n, t.v[2].n);
+	//	//glTexCoord2f(t.v[0].t, t.v[1].t, t.v[2].t);
+	//	glVertex3f(t.v[0].p, t.v[1].p, t.v[2].p);
+	//}
+	//glEnd();
+	glBegin(GL_TRIANGLES);
+
+	cout << m_triangles.size() << endl;
+
+	for (triangle t : m_triangles) {
+
+		glNormal3f(t.v[0].n.x, t.v[0].n.y, t.v[0].n.z);
+		glTexCoord2f(t.v[0].t.x, t.v[0].t.y);
+		glVertex3f(t.v[0].p.x, t.v[0].p.y, t.v[0].p.z);
+
+		glNormal3f(t.v[1].n.x, t.v[1].n.y, t.v[1].n.z);
+		glTexCoord2f(t.v[1].t.x, t.v[1].t.y);
+		glVertex3f(t.v[1].p.x, t.v[1].p.y, t.v[1].p.z);
+
+		glNormal3f(t.v[2].n.x, t.v[2].n.y, t.v[2].n.z);
+		glTexCoord2f(t.v[2].t.x, t.v[2].t.y);
+		glVertex3f(t.v[2].p.x, t.v[2].p.y, t.v[2].p.z);
 	}
-
-	/*glColor3f(m_color.x, m_color.y, m_color.z);
-	for (triangle triangle : allTriangles) {
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < 3; i++) {
-			glNormal3f(triangle.v[i].n);
-			glTexCoord2f(triangle.v[i].t);
-			glVertex3f(triangle.v[i].p);
-		}
-		glEnd();
-	}*/
+	glEnd();
 }
 
-vector<vector<vec3>> geometry::getTriangles() {
-	return allTriangles;
+vector<triangle> geometry::getTriangles() {
+	return m_triangles;
 }
 
-void geometry::addToTriangles(vector<vec3> triangle) {
-	allTriangles.push_back(triangle);
+void geometry::addToTriangles(triangle triangle) {
+	m_triangles.push_back(triangle);
 }
+
+//vector<vec3> geometry::getNormals() {
+//	return m_normals;
+//}
+//
+//vector<vec2> geometry::getTextures() {
+//	return m_uvs;
+//}
+//
+//vector<vec3> geometry::getPoints() {
+//	return m_points;
+//}
+//
+//void geometry::setNormals(vector<vec3>) {
+//
+//}
+//void geometry::setTextures(vector<vec2>) {
+//
+//}
+//void geometry::setPoints(vector<vec3>) {
+//
+//}
 
 geometry::~geometry(){}

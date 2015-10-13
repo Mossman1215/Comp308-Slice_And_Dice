@@ -9,9 +9,9 @@
 #include "comp308.hpp"
 
 struct vertex {
-	int p = 0; // index for point in m_points
-	int t = 0; // index for uv in m_uvs
-	int n = 0; // index for normal in m_normals
+	comp308::vec3 p; 
+	comp308::vec2 t;
+	comp308::vec3 n;
 };
 
 struct triangle {
@@ -28,18 +28,26 @@ private:
 	std::vector<comp308::vec3> m_normals;	// Normal list
 	std::vector<triangle> m_triangles;		// Triangle/Face list
 
-	std::vector<std::vector<comp308::vec3>> allTriangles;	//The triangles that make up this geometry.
-	//std::vector<triangle> allTriangles;
 	comp308::vec3 m_color;
+
+	// IDs for the display list to render
+	GLuint m_displayListPoly = 0; // DisplayList for Polygon
 public:
 	geometry();
-	//geometry(std::string filename);
-	geometry(std::vector<std::vector<comp308::vec3>> triangle);
+	geometry(std::string filename);
+	//geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
-	std::vector<triangle> createDisplayListPoly(std::string filename);
+	//std::vector<triangle> createDisplayListPoly();
+	void createDisplayListPoly();
 	void draw();
 	void render();
-	std::vector<std::vector<comp308::vec3>> getTriangles();
-	void addToTriangles(std::vector<comp308::vec3> triangle);
+	std::vector<triangle> getTriangles();
+	void addToTriangles(triangle triangle);
+	std::vector<comp308::vec3> getNormals();
+	std::vector<comp308::vec2> getTextures();
+	std::vector<comp308::vec3> getPoints();
+	void setNormals(std::vector<comp308::vec3>);
+	void setTextures(std::vector<comp308::vec2>);
+	void setPoints(std::vector<comp308::vec3>);
 	virtual ~geometry();
 };
