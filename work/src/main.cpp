@@ -375,7 +375,7 @@ int main(int argc, char **argv) {
 	//geometry triangle = geometry(triangles);
 	//g_geometry.push_back(triangle);
 
-	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
+	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
 	g_geometry.push_back(g_sphere);
 
 	g_cut = new cut();

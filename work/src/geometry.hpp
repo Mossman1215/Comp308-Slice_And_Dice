@@ -37,17 +37,12 @@ public:
 	geometry(std::string filename);
 	//geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
+	void createNormals();
 	//std::vector<triangle> createDisplayListPoly();
 	void createDisplayListPoly();
 	void draw();
 	void render();
 	std::vector<triangle> getTriangles();
 	void addToTriangles(triangle triangle);
-	std::vector<comp308::vec3> getNormals();
-	std::vector<comp308::vec2> getTextures();
-	std::vector<comp308::vec3> getPoints();
-	void setNormals(std::vector<comp308::vec3>);
-	void setTextures(std::vector<comp308::vec2>);
-	void setPoints(std::vector<comp308::vec3>);
 	virtual ~geometry();
 };

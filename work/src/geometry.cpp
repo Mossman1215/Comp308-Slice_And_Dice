@@ -1,4 +1,5 @@
 #include <cmath>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -50,13 +51,15 @@ void geometry::readOBJ(string filename) {
 	m_uvs.push_back(vec2(0, 0));
 	m_normals.push_back(vec3(0, 0, 1));
 
-
 	ifstream objFile(filename);
 
 	if (!objFile.is_open()) {
 		cerr << "Error reading " << filename << endl;
 		throw runtime_error("Error :: could not open file.");
 	}
+
+	int myformat = -1; // Allows for the various files to be formatted properly- detection along the way.
+					   // 0 means v/vt/vn, 1 means v//vn, 2 means v.
 
 	cout << "Reading file " << filename << endl;
 
@@ -83,12 +86,19 @@ void geometry::readOBJ(string filename) {
 
 			}
 			else if (mode == "vn") {
+				if (myformat == -1) {
+					myformat = 1;
+					cout << "v//vn format detected! Code:" << myformat << endl;
+				}
 				vec3 vn;
 				objLine >> vn.x >> vn.y >> vn.z;
 				m_normals.push_back(vn);
-
 			}
 			else if (mode == "vt") {
+				if (myformat != 0) {
+					myformat = 0;
+					cout << "v/vt/vn format detected! Code:" << myformat << endl;
+				}
 				vec2 vt;
 				objLine >> vt.x >> vt.y;
 				m_uvs.push_back(vt);
@@ -98,6 +108,10 @@ void geometry::readOBJ(string filename) {
 
 				vector<vertex> verts;
 				while (objLine.good()) {
+					if (myformat == -1) {
+						myformat = 2;
+						cout << "v format detected! Code:" << myformat << endl;
+					}
 					vertex v;
 
 					//-------------------------------------------------------------
@@ -116,15 +130,28 @@ void geometry::readOBJ(string filename) {
 
 					// Assignment code (assumes you have all of v/vt/vn for each vertex)
 					int i;
-					objLine >> i;		// Scan in position index
-					v.p = m_points[i];
-					objLine.ignore(1);	// Ignore the '/' character
-					objLine >> i;		// Scan in uv (texture coord) index
-					v.t = m_uvs[i];
-					objLine.ignore(1);	// Ignore the '/' character
-					objLine >> i;		// Scan in normal index
-					v.n = m_normals[i];
-
+					if (myformat == 0) {
+						objLine >> i;		// Scan in position index
+						v.p = m_points[i];
+						objLine.ignore(1);	// Ignore the '/' character
+						objLine >> i;		// Scan in uv (texture coord) index
+						v.t = m_uvs[i];
+						objLine.ignore(1);	// Ignore the '/' character
+						objLine >> i;		// Scan in normal index
+						v.n = m_normals[i];
+					}
+					// My code (assumes that, if v/vt/vn is not true, it must be v//vn)
+					else if (myformat == 1) {
+						objLine >> i;		// Scan in position index
+						v.p = m_points[i];
+						objLine.ignore(2);	// Ignore the '//' characters
+						objLine >> i;		// Scan in normal index
+						v.n = m_normals[i];
+					}
+					else if (myformat == 2) {
+						objLine >> i;		// Scan in position index
+						v.p = m_points[i];
+					}
 					verts.push_back(v);
 				}
 
@@ -144,12 +171,65 @@ void geometry::readOBJ(string filename) {
 	cout << "Reading OBJ file is DONE." << endl;
 	cout << m_points.size() - 1 << " points" << endl;
 	cout << m_uvs.size() - 1 << " uv coords" << endl;
+
+
+	// If we didn't have any normals, create them
+	if (m_normals.size() <= 1) {
+		createNormals();
+	}
+	cout << "Normals generation complete!" << endl;
 	cout << m_normals.size() - 1 << " normals" << endl;
 	cout << m_triangles.size() << " faces" << endl;
+}
 
+//-------------------------------------------------------------
+// [Assignment 1] :
+// Fill the following function to populate the normals for 
+// the model currently loaded. Compute per face normals
+// first and get that working before moving onto calculating
+// per vertex normals.
+//-------------------------------------------------------------
+void geometry::createNormals() {
+	// YOUR CODE GOES HERE
+	// ...
+	cout << "Creating normals from nothing." << endl;
+	map<float, vector<vec3>> tris;
+	vec3 left, right, normal;
+	triangle tri;
 
-	//// If we didn't have any normals, create them
-	//if (m_normals.size() <= 1) createNormals();
+	for (int t = 0; t < m_triangles.size(); t++) {
+		if (t % 1000 == 0) {
+			cout << "Now generating normals for triangle " << t << endl;
+		}
+		tri = m_triangles[t];
+		left = vec3(tri.v[1].p.x, tri.v[1].p.y, tri.v[1].p.z) - vec3(tri.v[0].p.x, tri.v[0].p.y, tri.v[0].p.z);
+		right = vec3(tri.v[2].p.x, tri.v[2].p.y, tri.v[2].p.z) - vec3(tri.v[0].p.x, tri.v[0].p.y, tri.v[0].p.z);
+		normal = cross(left, right);
+		normal = normalize(normal);
+		for (int i = 0; i < 3; i++) {
+			float ident = tri.v[i].p.x + tri.v[i].p.y + tri.v[i].p.z;
+			tris[ident].push_back(normal);
+		}
+		m_triangles[t] = tri;
+	}
+	cout << "Face normals created. Smoothing now." << endl;
+
+	for (int t = 0; t < m_triangles.size(); t++) {
+		if (t % 1000 == 0) {
+			cout << "Now smoothing triangle " << t << endl;
+		}
+		tri = m_triangles[t];
+		for (int i = 0; i < 3; i++) {
+			normal = vec3(0, 0, 0);
+			float ident = tri.v[i].p.x + tri.v[i].p.y + tri.v[i].p.z;
+			for (vec3 vec : tris[ident]) {
+				normal = normal + vec;
+			}
+			tri.v[i].n = normalize(normal);
+		}
+	}
+	cout << "Smoothing complete." << endl;
+
 }
 
 void geometry::createDisplayListPoly() {
@@ -163,8 +243,6 @@ void geometry::createDisplayListPoly() {
 	glNewList(m_displayListPoly, GL_COMPILE);
 
 	glBegin(GL_TRIANGLES);
-
-	cout << m_triangles.size() << endl;
 
 	for (triangle t : m_triangles) {
 
@@ -210,8 +288,6 @@ void geometry::render() {
 	//}
 	//glEnd();
 	glBegin(GL_TRIANGLES);
-
-	cout << m_triangles.size() << endl;
 
 	for (triangle t : m_triangles) {
 

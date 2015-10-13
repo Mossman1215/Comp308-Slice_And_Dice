@@ -27,19 +27,20 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	cutPlane = plane;
 	vec3 normal = findNormal();
 	planeD = calculateDisplacement(normal);
-
+	int triCount = 0;
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
 		vector<geometry> newGeometrys;
 		newGeometrys = cutGeometry(g_geometry);
 		for (geometry newGeometry : newGeometrys) {
 			allGeometry.push_back(newGeometry);
+			triCount += newGeometry.getTriangles().size();
 		}
 	}
 
 	cout << "Currently rendering ";
-	cout << allGeometry.size();
-	cout << " pieces of geometry" << endl;
+	cout << triCount;
+	cout << " triangles" << endl;
 
 	return allGeometry;
 }
