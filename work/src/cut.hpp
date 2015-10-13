@@ -15,14 +15,15 @@ private:
 	comp308::vec3 findNormal();
 	int isInFront(comp308::vec3 vertex);
 	float calculateDisplacement(comp308::vec3 normal);
-	std::vector<comp308::vec3> calculateIntersection(std::vector<comp308::vec3> v1, std::vector<comp308::vec3> v2);
-	std::vector<std::vector<comp308::vec3>> cutTriangle(std::vector<comp308::vec3> frontVertices, std::vector<comp308::vec3> backVertices);
-	std::vector<std::vector<comp308::vec3>> quadToTriangle(std::vector<comp308::vec3> vertices);
-	std::vector<std::vector<comp308::vec3>> separateTriangles(std::vector<std::vector<comp308::vec3>> triangles, int direction);
-	std::vector<comp308::vec3> separateTriangle(std::vector<comp308::vec3> triangle, int direction);
+	std::vector<vertex> calculateIntersection(std::vector<vertex> v1, std::vector<vertex> v2);
+	std::vector<triangle> cutTriangle(std::vector<vertex> frontVertices, std::vector<vertex> backVertices);
+	std::vector<triangle> quadToTriangle(std::vector<vertex> vertices);
+	std::vector<triangle> separateTriangles(std::vector<triangle> triangles, int direction);
+	triangle separateTriangle(triangle t, int direction);
+	vertex findVertex(float percentage, vertex from, vertex to);
 	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, float length);
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);
-	comp308::vec3 getCentroid(std::vector<comp308::vec3> shape);
+	comp308::vec3 getCentroid(triangle t);
 public:
 	cut();
 	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry);

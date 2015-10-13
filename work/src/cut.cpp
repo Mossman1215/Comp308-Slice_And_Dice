@@ -16,6 +16,7 @@ vector<vec3> cutPlane;
 vec3 normal;
 float planeD;
 
+
 cut::cut() {}
 
 /*
@@ -26,19 +27,20 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	cutPlane = plane;
 	vec3 normal = findNormal();
 	planeD = calculateDisplacement(normal);
-
+	int triCount = 0;
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
 		vector<geometry> newGeometrys;
 		newGeometrys = cutGeometry(g_geometry);
 		for (geometry newGeometry : newGeometrys) {
 			allGeometry.push_back(newGeometry);
+			triCount += newGeometry.getTriangles().size();
 		}
 	}
 
 	cout << "Currently rendering ";
-	cout << allGeometry.size();
-	cout << " pieces of geometry" << endl;
+	cout << triCount;
+	cout << " triangles" << endl;
 
 	return allGeometry;
 }
@@ -52,21 +54,22 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	geometry geometry1 = geometry();
 	geometry geometry2 = geometry();
 	int intersects = 0;
-	vector<vector<vec3>> tempTriangles;
+	vector<triangle> tempTriangles;
 
-	for (vector<vec3> triangle : g_geometry.getTriangles()) {
-		vector<vec3> vertices = triangle;
+	for (triangle t : g_geometry.getTriangles()) {
+		vector<vertex> intersectVertices;
 
-		vector<vec3> frontVertices;
-		vector<vec3> backVertices;
+		vector<vertex> frontVertices;
+		vector<vertex> backVertices;
 
 		//Separate the vertices.
-		for (vec3 vertex : vertices) {
-			if (isInFront(vertex) > 0) {
-				frontVertices.push_back(vertex);
+		for (vertex v : t.v) {
+			vec3 point = v.p;
+			if (isInFront(point) > 0) {
+				frontVertices.push_back(v);
 			}
 			else {
-				backVertices.push_back(vertex);
+				backVertices.push_back(v);
 			}
 		}
 
@@ -74,31 +77,31 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		if (frontVertices.size() > 0 && backVertices.size() > 0) {	//If triangle intersects with the plane.
 			intersects = 1;
 			if (frontVertices.size() > backVertices.size()) {
-				vertices = calculateIntersection(backVertices, frontVertices);
+				intersectVertices = calculateIntersection(backVertices, frontVertices);
 			}
 			else {
-				vertices = calculateIntersection(frontVertices, backVertices);
+				intersectVertices = calculateIntersection(frontVertices, backVertices);
 			}
 
 			//Add the new vertices to the old ones
-			for (vec3 vertex : vertices) {
+			for (vertex vertex : intersectVertices) {
 				frontVertices.push_back(vertex);
 				backVertices.push_back(vertex);
 			}
 
-			vector<vector<vec3>> newTriangles;
+			vector<triangle> newTriangles;
 
 			//Actually cut it.
 			newTriangles = cutTriangle(frontVertices, backVertices);
 
-			vector<vector<vec3>> triangles1;
-			triangles1.push_back(newTriangles[0]);
-			vector<vector<vec3>> triangles2;
-			triangles2.push_back(newTriangles[1]);
-			triangles2.push_back(newTriangles[2]);
+			//triangle tri;
+			//tri = newTriangles[0];
+			//vector<triangle> quad;
+			//quad.push_back(newTriangles[1]);
+			//quad.push_back(newTriangles[2]);
 
-			vec3 tri1Centroid = getCentroid(newTriangles[0]);
-			vec3 tri2Centroid = getCentroid(newTriangles[1]);
+			vec3 tri1Centroid = getCentroid(newTriangles[0]);	//Centroid of the triangle
+			vec3 tri2Centroid = getCentroid(newTriangles[1]);	//Centroid of one of the triangles within the quad
 
 			//Add the new triangles to the corresponding geometry.
 			if (isInFront(tri1Centroid) > 0) {
@@ -117,20 +120,21 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 			}
 		}
 		else {
-			tempTriangles.push_back(triangle);
+			tempTriangles.push_back(t);	//Store all the triangles within the geometry that haven't been cut so that we can
+										//translate them later if the geometry was cut.
 		}
 	}
 
-	for (vector<vec3> triangle : tempTriangles) {
+	for (triangle t : tempTriangles) {
 		if (intersects == 1) {
-			vec3 centroid = getCentroid(triangle);
+			vec3 centroid = getCentroid(t);
 			float distance = dot(normal, (centroid - cutPlane[0]));
-			vector<vec3> newTriangle;
+			triangle newTriangle;
 			if (distance > 0) {
-				newTriangle = separateTriangle(triangle, 1);
+				newTriangle = separateTriangle(t, 1);
 			}
 			else {
-				newTriangle = separateTriangle(triangle, -1);
+				newTriangle = separateTriangle(t, -1);
 			}
 			if (isInFront(centroid) > 0) {
 				geometry1.addToTriangles(newTriangle);
@@ -140,11 +144,11 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 			}
 		}
 		else {
-			if (isInFront(getCentroid(triangle)) > 0) {
-				geometry1.addToTriangles(triangle);
+			if (isInFront(getCentroid(t)) > 0) {
+				geometry1.addToTriangles(t);
 			}
 			else {
-				geometry2.addToTriangles(triangle);
+				geometry2.addToTriangles(t);
 			}
 		}
 	}
@@ -157,7 +161,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	//	return bothGeometrys;
 	//}
 
-	if (geometry1.getTriangles().size() > 0) {
+	if (geometry1.getTriangles().size() > 0) {;
 		bothGeometrys.push_back(geometry1);
 	}
 
@@ -186,6 +190,7 @@ Returns whether or not the given point is in front or behind the plane.
 int cut::isInFront(vec3 vertex) {
 	return ((normal.x*vertex.x) + (normal.y*vertex.y) + (normal.z*vertex.z) + planeD);
 }
+
 /*
 Calculates the displacement of the plane (the 'd' in ax + by + cz + d = 0).
 */
@@ -200,10 +205,10 @@ Calculates the lines from these vectors and given vertices.
 Calculates the intersection of those lines with the plane and finally
 connects the two intersections to form the cut line.
 */
-vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
+vector<vertex> cut::calculateIntersection(vector<vertex> v1, vector<vertex> v2) {
 	//The two vectors
-	vec3 vector1 = v2[0] - v1[0];
-	vec3 vector2 = v2[1] - v1[0];
+	vec3 vector1 = v2[0].p - v1[0].p;
+	vec3 vector2 = v2[1].p - v1[0].p;
 
 	//The magnitude of these vectors
 	double vector1Magntde = pow((pow(vector1.x, 2) + pow(vector1.y, 2) + pow(vector1.z, 2)), 0.5);
@@ -214,19 +219,23 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 	vec3 vector2Unit = vector2 * (1 / vector2Magntde);
 
 	//The two lines
-	vec3 line1 = getLine(v1[0], vector1Unit, 0);
-	vec3 line2 = getLine(v1[0], vector2Unit, 0);
+	//vec3 line1 = getLine(points[v1[0].p], vector1Unit, 0);
+	//vec3 line2 = getLine(points[v1[0].p], vector2Unit, 0);
 
-	//The scaler t for the intersection.
-	float t = getLineDisplacement(v1[0], vector1Unit);
-	float t2 = getLineDisplacement(v1[0], vector2Unit);
+	//The scaler t for the intersection
+	float t = getLineDisplacement(v1[0].p, vector1Unit);
+	float t2 = getLineDisplacement(v1[0].p, vector2Unit);
 
-	//The vertices at the intersection point
-	vec3 intersectVertex = getLine(v1[0], vector1Unit, t);
-	vec3 intersectVertex2 = getLine(v1[0], vector2Unit, t2);
+	//The location of the vertices at the intersection point
+	//vec3 intersectVertex = getLine(points[v1[0].p], vector1Unit, t);
+	//vec3 intersectVertex2 = getLine(points[v1[0].p], vector2Unit, t2);
 
-	vector<vec3> vertices;
-	vertices.push_back(intersectVertex);
+	//The new vertices at the intersection point
+	vertex intersectVertex1 = findVertex(t / vector1Magntde, v1[0], v2[0]);
+	vertex intersectVertex2 = findVertex(t2 / vector2Magntde, v1[0], v2[1]);
+
+	vector<vertex> vertices;
+	vertices.push_back(intersectVertex1);
 	vertices.push_back(intersectVertex2);
 
 	return vertices;
@@ -236,33 +245,37 @@ vector<vec3> cut::calculateIntersection(vector<vec3> v1, vector<vec3> v2) {
 Given a set of vertices that make up a triangle and a quad. Cut the triangle that is made up of
 these shapes.
 */
-vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> backVertices) {
-	vector<vec3> quad;
-	vector<vec3> triangle;
+vector<triangle> cut::cutTriangle(vector<vertex> frontVertices, vector<vertex> backVertices) {
+	vector<vertex> quad;
+	triangle tri;
 
 	if (frontVertices.size() > backVertices.size()) {
 		quad = frontVertices;
-		triangle = backVertices;
+		tri.v[0] = backVertices[0];
+		tri.v[1] = backVertices[1];
+		tri.v[2] = backVertices[2];
 	}
 	else {
 		quad = backVertices;
-		triangle = frontVertices;
+		tri.v[0] = frontVertices[0];
+		tri.v[1] = frontVertices[1];
+		tri.v[2] = frontVertices[2];
 	}
 
-	vec3 centroidTri = getCentroid(triangle);
+	vec3 centroidTri = getCentroid(tri);
 
 	//Convert quad to triangles
-	vector<vector<vec3>> quadTriangles = quadToTriangle(quad);
+	vector<triangle> quadTriangles = quadToTriangle(quad);
 
-	vector<vector<vec3>> triangles;
-	triangles.push_back(triangle);
+	vector<triangle> triangles;
+	triangles.push_back(tri);
 	triangles.push_back(quadTriangles[0]);
 	triangles.push_back(quadTriangles[1]);
 
 	//The shortest distance between the triangle centroid and the cutPlane.
 	float distance = dot(normal, (centroidTri - cutPlane[0]));
 
-	vector<vector<vec3>> newTriangles;
+	vector<triangle> newTriangles;
 
 	//If centroidTri lies on same side as the normal.
 	if (distance > 0) {
@@ -282,27 +295,27 @@ vector<vector<vec3>> cut::cutTriangle(vector<vec3> frontVertices, vector<vec3> b
 /*
  Converts the given quad into two triangles.
  */
-vector<vector<vec3>> cut::quadToTriangle(vector<vec3> vertices) {
-	vector<vec3> triangle1;
-	vector<vec3> triangle2;
-	for (int i = 0; i < vertices.size(); i++) {
+vector<triangle> cut::quadToTriangle(vector<vertex> quad) {
+	triangle triangle1;
+	triangle triangle2;
+	for (int i = 0; i < quad.size(); i++) {
 		if (i == 0) {
-			triangle1.push_back(vertices[i]);
-			triangle2.push_back(vertices[i]);
+			triangle1.v[0] = (quad[i]);
+			triangle2.v[0] = (quad[i]);
 		}
 		else if (i == 1) {
-			triangle2.push_back(vertices[i]);
+			triangle2.v[1] = (quad[i]);
 		}
 		else if (i == 2) {
-			triangle1.push_back(vertices[i]);
+			triangle1.v[1] = (quad[i]);
 		}
 		else if (i == 3) {
-			triangle1.push_back(vertices[i]);
-			triangle2.push_back(vertices[i]);
+			triangle1.v[2] = (quad[i]);
+			triangle2.v[2] = (quad[i]);
 		}
 	}
 
-	vector<vector<vec3>> triangles;
+	vector<triangle> triangles;
 	triangles.push_back(triangle1);
 	triangles.push_back(triangle2);
 
@@ -314,8 +327,8 @@ Separates a single triangle making up the mesh of the geometry
 triangle translated by normal * direction.
 Quad triangles translated by normal * -direction.
 */
-vector<vector<vec3>> cut::separateTriangles(vector<vector<vec3>> triangles, int direction) {
-	vector<vector<vec3>> newTriangles = triangles;
+vector<triangle> cut::separateTriangles(vector<triangle> triangles, int direction) {
+	vector<triangle> newTriangles = triangles;
 
 	vec3 translateDirection = normal * direction;
 
@@ -326,16 +339,16 @@ vector<vector<vec3>> cut::separateTriangles(vector<vector<vec3>> triangles, int 
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
 	for (int i = 0; i < newTriangles.size(); i++) {
-		for (vec3 &vertex : newTriangles[i]) {
+		for (vertex &v : newTriangles[i].v){
 			if (i == 0 && direction != 0) {
-				vertex.x = vertex.x + translateUnit.x;
-				vertex.y = vertex.y + translateUnit.y;
-				vertex.z = vertex.z + translateUnit.z;
+				v.p.x = v.p.x + translateUnit.x;
+				v.p.y = v.p.y + translateUnit.y;
+				v.p.z = v.p.z + translateUnit.z;
 			}
 			else if (direction != 0) {
-				vertex.x = vertex.x + translateUnit.x * -1;
-				vertex.y = vertex.y + translateUnit.y * -1;
-				vertex.z = vertex.z + translateUnit.z * -1;
+				v.p.x = v.p.x + translateUnit.x * -1;
+				v.p.y = v.p.y + translateUnit.y * -1;
+				v.p.z = v.p.z + translateUnit.z * -1;
 			}
 		}
 	}
@@ -343,8 +356,9 @@ vector<vector<vec3>> cut::separateTriangles(vector<vector<vec3>> triangles, int 
 	return newTriangles;
 }
 
-vector<vec3> cut::separateTriangle(vector<vec3> triangle, int direction) {
-	vector<vec3> newTriangle = triangle;
+triangle cut::separateTriangle(triangle t, int direction) {
+
+	triangle newTriangle = t;
 
 	vec3 translateDirection = normal * direction;
 
@@ -354,13 +368,32 @@ vector<vec3> cut::separateTriangle(vector<vec3> triangle, int direction) {
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
-	for (vec3 &vertex : newTriangle) {
-		vertex.x = vertex.x + translateUnit.x;
-		vertex.y = vertex.y + translateUnit.y;
-		vertex.z = vertex.z + translateUnit.z;
+	for (vertex &v : newTriangle.v) {
+		v.p.x = v.p.x + translateUnit.x;
+		v.p.y = v.p.y + translateUnit.y;
+		v.p.z = v.p.z + translateUnit.z;
 	}
 
 	return newTriangle;
+}
+
+/*
+Given some percentage. linearly interpolate along the edge in order to
+calculate the new vertex values.
+Add those values to the lists and finally give the vertex the corresponding index's
+in order to find said values.
+*/
+vertex cut::findVertex(float percentage, vertex from, vertex to) {	//TODO check this
+	vec3 normal = ((to.n - from.n) * percentage) + from.n;
+	vec2 uv = ((to.t - from.t) * percentage) + from.t;
+	vec3 point = ((to.p - from.p) * percentage) + from.p;
+
+	vertex newVertex;
+	newVertex.n = normal;
+	newVertex.t = uv;
+	newVertex.p = point;
+
+	return newVertex;
 }
 
 /*
@@ -380,13 +413,13 @@ float cut::getLineDisplacement(vec3 position, vec3 direction) {
 }
 
 /*
-Helper method for finding the centroid of a shape.
+Helper method for finding the centroid of a triangle.
 */
-vec3 cut::getCentroid(vector<vec3> shape) {
-	GLfloat centerX = (shape[0].x + shape[1].x + shape[2].x) / 3;
-	GLfloat centerY = (shape[0].y + shape[1].y + shape[2].y) / 3;
-	GLfloat centerZ = (shape[0].z + shape[1].z + shape[2].z) / 3;
-
+vec3 cut::getCentroid(triangle t) {
+	GLfloat centerX = (t.v[0].p.x + t.v[1].p.x + t.v[2].p.x) / 3;
+	GLfloat centerY = (t.v[0].p.y + t.v[1].p.y + t.v[2].p.y) / 3;
+	GLfloat centerZ = (t.v[0].p.z + t.v[1].p.z + t.v[2].p.z) / 3;
+	
 	vec3 centroid(centerX, centerY, centerZ);
 
 	return centroid;
