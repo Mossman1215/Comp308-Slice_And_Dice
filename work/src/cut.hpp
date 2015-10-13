@@ -19,8 +19,7 @@ private:
 	std::vector<triangle> cutTriangle(std::vector<vertex> frontVertices, std::vector<vertex> backVertices);
 	std::vector<triangle> quadToTriangle(std::vector<vertex> vertices);
 	std::vector<triangle> separateTriangles(std::vector<triangle> triangles, int direction);
-	void separateTriangle(triangle t, int direction);
-	//std::vector<comp308::vec3> separateTriangle(std::vector<comp308::vec3> triangle, int direction);
+	triangle separateTriangle(triangle t, int direction);
 	vertex findVertex(float percentage, vertex from, vertex to);
 	comp308::vec3 getLine(comp308::vec3 position, comp308::vec3 direction, float length);
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);

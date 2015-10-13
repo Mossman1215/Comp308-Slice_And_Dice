@@ -128,17 +128,18 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		if (intersects == 1) {
 			vec3 centroid = getCentroid(t);
 			float distance = dot(normal, (centroid - cutPlane[0]));
+			triangle newTriangle;
 			if (distance > 0) {
-				separateTriangle(t, 1);
+				newTriangle = separateTriangle(t, 1);
 			}
 			else {
-				separateTriangle(t, -1);
+				newTriangle = separateTriangle(t, -1);
 			}
 			if (isInFront(centroid) > 0) {
-				geometry1.addToTriangles(t);
+				geometry1.addToTriangles(newTriangle);
 			}
 			else {
-				geometry2.addToTriangles(t);
+				geometry2.addToTriangles(newTriangle);
 			}
 		}
 		else {
@@ -354,7 +355,9 @@ vector<triangle> cut::separateTriangles(vector<triangle> triangles, int directio
 	return newTriangles;
 }
 
-void cut::separateTriangle(triangle t, int direction) {
+triangle cut::separateTriangle(triangle t, int direction) {
+
+	triangle newTriangle = t;
 
 	vec3 translateDirection = normal * direction;
 
@@ -364,11 +367,13 @@ void cut::separateTriangle(triangle t, int direction) {
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
-	for (vertex &v : t.v) {
+	for (vertex &v : newTriangle.v) {
 		v.p.x = v.p.x + translateUnit.x;
 		v.p.y = v.p.y + translateUnit.y;
 		v.p.z = v.p.z + translateUnit.z;
 	}
+
+	return newTriangle;
 }
 
 /*
