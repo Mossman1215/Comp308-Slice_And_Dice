@@ -20,6 +20,7 @@
 #include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
+#include <map>
 
 using namespace std;
 using namespace comp308;
@@ -36,7 +37,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 100;
+float g_zfar = 1000;
 
 
 // Mouse controlled Camera values
@@ -66,6 +67,7 @@ Rigidbody* box;
 Rigidbody* box2;
 Physics* physics;
 bool g_paused = false;
+map <geometry*,Rigidbody*>geo_to_rigid;
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -77,7 +79,6 @@ void initLight() {
 	glLightfv(GL_LIGHT0, GL_POSITION, direction);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffintensity);
 	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);	
-	
 	
 	glEnable(GL_LIGHT0);
 }
@@ -133,7 +134,11 @@ void draw() {
 
 	// Render geometry
 	for (geometry Geometry : g_geometry) {
+		glPushMatrix();
+		//get position from rigidbody corresponding to this geometry object
+		//geo_to_rigid.get(Geometry);
 		Geometry.draw();
+		glPopMatrix();
 	}
 
 	glPushMatrix();
@@ -250,6 +255,12 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	case 'k':
 		box2->addForce(vec3(0,-1,0));
 		break;
+	case 'n':
+		box2->addForce(vec3(0,0,-1));
+		break;
+	case 'm':
+		box2->addForce(vec3(0,0,1));
+		break;
 	}
 }
 
@@ -291,10 +302,13 @@ void mouseCallback(int button, int state, int x, int y) {
 				plane.push_back(cut_draw_2);
 
 				vector<geometry> allGeometry;
-
+				
 				allGeometry = g_cut->createCut(plane, g_geometry);
-
+				
 				g_geometry = allGeometry;
+				//for all geometry objects from geo_to_rigid.size to g_geometry.size
+				//add the new ones to geo_to_rigid
+
 			}
 			break;
 
@@ -383,19 +397,6 @@ int main(int argc, char **argv) {
 	initLight();
 
 	// Finally create our geometry
-	vector<vec3> vertices;
-	vec3 v1(-5.0, -5.0, 5.0);
-	vec3 v2(-5.0, 5.0, -2.5);
-	vec3 v3(5.0, 5.0, -5.0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-	vector<vector<vec3>> triangles;
-	triangles.push_back(vertices);
-
-	//geometry triangle = geometry(triangles);
-	//g_geometry.push_back(triangle);
-
 	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
 	g_geometry.push_back(g_sphere);
 
@@ -410,8 +411,6 @@ int main(int argc, char **argv) {
 	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
 	physics->addRigidbody(box2);
 	physics->addRigidbody(box);
-	box->addForce(vec3(0,-9.81,0));
-	box2->addForce(vec3(0,-9.81,0));
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();
