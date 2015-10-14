@@ -303,11 +303,8 @@ void mouseCallback(int button, int state, int x, int y) {
 				plane.push_back(cut_proj_1);
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
-
 				vector<geometry> allGeometry;
-				
 				allGeometry = g_cut->createCut(plane, g_geometry);
-				
 				g_geometry = allGeometry;
 				//for all geometry objects
 				//preserve momentum
