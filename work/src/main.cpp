@@ -80,7 +80,6 @@ void initLight() {
 	glEnable(GL_LIGHT0);
 }
 
-
 // Sets up where the camera is in the scene
 // Called every frame
 //use glortho for putting a point in space for a clicked position
@@ -142,7 +141,7 @@ void draw() {
 
 	glDisable(GL_LIGHTING);
 
-	glEnable(GL_BLEND);
+	/*glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
 	glBegin(GL_QUADS);
@@ -151,7 +150,7 @@ void draw() {
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
-	glDisable(GL_BLEND);
+	glDisable(GL_BLEND);*/
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
@@ -375,7 +374,7 @@ int main(int argc, char **argv) {
 	//geometry triangle = geometry(triangles);
 	//g_geometry.push_back(triangle);
 
-	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
+	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
 	g_geometry.push_back(g_sphere);
 
 	g_cut = new cut();

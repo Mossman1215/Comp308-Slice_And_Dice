@@ -55,6 +55,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	geometry geometry2 = geometry();
 	int intersects = 0;
 	vector<triangle> tempTriangles;
+	vector<vertex> cutVertices;
 
 	for (triangle t : g_geometry.getTriangles()) {
 		vector<vertex> intersectVertices;
@@ -87,18 +88,13 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 			for (vertex vertex : intersectVertices) {
 				frontVertices.push_back(vertex);
 				backVertices.push_back(vertex);
+				cutVertices.push_back(vertex);
 			}
 
 			vector<triangle> newTriangles;
 
 			//Actually cut it.
 			newTriangles = cutTriangle(frontVertices, backVertices);
-
-			//triangle tri;
-			//tri = newTriangles[0];
-			//vector<triangle> quad;
-			//quad.push_back(newTriangles[1]);
-			//quad.push_back(newTriangles[2]);
 
 			vec3 tri1Centroid = getCentroid(newTriangles[0]);	//Centroid of the triangle
 			vec3 tri2Centroid = getCentroid(newTriangles[1]);	//Centroid of one of the triangles within the quad
@@ -125,6 +121,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		}
 	}
 
+	//Translate the uncut triangles of the geometry
 	for (triangle t : tempTriangles) {
 		if (intersects == 1) {
 			vec3 centroid = getCentroid(t);
@@ -153,13 +150,26 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		}
 	}
 
+	//Create a new mesh for the cut area
+	vertex centroidPoly = getCentre(cutVertices);
+	vector<triangle> mesh = getMesh(cutVertices, centroidPoly);
+	vector<triangle> mesh2 = getMesh(cutVertices, centroidPoly);
+
+	//Split the mesh into two
+	for (triangle t : mesh) {
+		triangle newTriangle;
+		newTriangle = separateTriangle(t, 1);
+		geometry1.addToTriangles(newTriangle);
+	}
+
+	for (triangle t : mesh2) {
+		triangle newTriangle;
+		newTriangle = separateTriangle(t, -1);
+		geometry2.addToTriangles(newTriangle);
+	}
+
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
 	vector<geometry> bothGeometrys;
-
-	//if (geometry1.getTriangles().size() == 0 && geometry2.getTriangles().size() == 0) {
-	//	bothGeometrys.push_back(g_geometry);
-	//	return bothGeometrys;
-	//}
 
 	if (geometry1.getTriangles().size() > 0) {;
 		bothGeometrys.push_back(geometry1);
@@ -218,17 +228,9 @@ vector<vertex> cut::calculateIntersection(vector<vertex> v1, vector<vertex> v2) 
 	vec3 vector1Unit = vector1 * (1 / vector1Magntde);
 	vec3 vector2Unit = vector2 * (1 / vector2Magntde);
 
-	//The two lines
-	//vec3 line1 = getLine(points[v1[0].p], vector1Unit, 0);
-	//vec3 line2 = getLine(points[v1[0].p], vector2Unit, 0);
-
 	//The scaler t for the intersection
 	float t = getLineDisplacement(v1[0].p, vector1Unit);
 	float t2 = getLineDisplacement(v1[0].p, vector2Unit);
-
-	//The location of the vertices at the intersection point
-	//vec3 intersectVertex = getLine(points[v1[0].p], vector1Unit, t);
-	//vec3 intersectVertex2 = getLine(points[v1[0].p], vector2Unit, t2);
 
 	//The new vertices at the intersection point
 	vertex intersectVertex1 = findVertex(t / vector1Magntde, v1[0], v2[0]);
@@ -296,30 +298,30 @@ vector<triangle> cut::cutTriangle(vector<vertex> frontVertices, vector<vertex> b
  Converts the given quad into two triangles.
  */
 vector<triangle> cut::quadToTriangle(vector<vertex> quad) {
-	triangle triangle1;
-	triangle triangle2;
-	for (int i = 0; i < quad.size(); i++) {
-		if (i == 0) {
-			triangle1.v[0] = (quad[i]);
-			triangle2.v[0] = (quad[i]);
-		}
-		else if (i == 1) {
-			triangle2.v[1] = (quad[i]);
-		}
-		else if (i == 2) {
-			triangle1.v[1] = (quad[i]);
-		}
-		else if (i == 3) {
-			triangle1.v[2] = (quad[i]);
-			triangle2.v[2] = (quad[i]);
-		}
+triangle triangle1;
+triangle triangle2;
+for (int i = 0; i < quad.size(); i++) {
+	if (i == 0) {
+		triangle1.v[0] = (quad[i]);
+		triangle2.v[0] = (quad[i]);
 	}
+	else if (i == 1) {
+		triangle2.v[1] = (quad[i]);
+	}
+	else if (i == 2) {
+		triangle1.v[1] = (quad[i]);
+	}
+	else if (i == 3) {
+		triangle1.v[2] = (quad[i]);
+		triangle2.v[2] = (quad[i]);
+	}
+}
 
-	vector<triangle> triangles;
-	triangles.push_back(triangle1);
-	triangles.push_back(triangle2);
+vector<triangle> triangles;
+triangles.push_back(triangle1);
+triangles.push_back(triangle2);
 
-	return triangles;
+return triangles;
 }
 
 /*
@@ -339,7 +341,7 @@ vector<triangle> cut::separateTriangles(vector<triangle> triangles, int directio
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
 	for (int i = 0; i < newTriangles.size(); i++) {
-		for (vertex &v : newTriangles[i].v){
+		for (vertex &v : newTriangles[i].v) {
 			if (i == 0 && direction != 0) {
 				v.p.x = v.p.x + translateUnit.x;
 				v.p.y = v.p.y + translateUnit.y;
@@ -397,6 +399,23 @@ vertex cut::findVertex(float percentage, vertex from, vertex to) {	//TODO check 
 }
 
 /*
+Creates a vector of triangles representing the mesh formed from the cut area.
+*/
+vector<triangle> cut::getMesh(vector<vertex> vertices, vertex centre){
+	vector<triangle> mesh;
+
+	for (int i = 0; i < vertices.size() - 1; i++) {
+		triangle t;
+		t.v[0] = centre;
+		t.v[1] = vertices[i];
+		t.v[2] = vertices[i + 1];
+		mesh.push_back(t);
+	}
+
+	return mesh;
+}
+
+/*
 Helper method for generating a line given a point, direction and length.
 */
 vec3 cut::getLine(vec3 position, vec3 direction, float length) {
@@ -423,4 +442,46 @@ vec3 cut::getCentroid(triangle t) {
 	vec3 centroid(centerX, centerY, centerZ);
 
 	return centroid;
+}
+
+/*
+Helper method for getting the centroid vertex of a convex polygon.
+*/
+vertex cut::getCentre(vector<vertex> polygon) {
+	GLfloat centreNX = 0;
+	GLfloat centreNY = 0;
+	GLfloat centreNZ = 0;
+	
+	GLfloat centreTX = 0;
+	GLfloat centreTY = 0;
+	
+	GLfloat centrePX = 0;
+	GLfloat centrePY = 0;
+	GLfloat centrePZ = 0;
+
+	for (vertex v : polygon) {
+		centreNX = centreNX + v.n.x;
+		centreNY = centreNY + v.n.y;
+		centreNZ = centreNZ + v.n.z;
+
+		centreTX = centreTX + v.t.x;
+		centreTY = centreTY + v.t.y;
+
+		centrePX = centrePX + v.p.x;
+		centrePY = centrePY + v.p.y;
+		centrePZ = centrePZ + v.p.z;
+	}
+
+	int size = polygon.size();
+
+	vec3 centreN(centreNX / size, centreNY / size, centreNZ / size);
+	vec2 centreT(centreTX / size, centreTY / size);
+	vec3 centreP(centrePX / size, centrePY / size, centrePZ / size);
+
+	vertex centreVertex;
+	centreVertex.n = centreN;
+	centreVertex.t = centreT;
+	centreVertex.p = centreP;
+
+	return centreVertex;
 }
