@@ -130,7 +130,7 @@ void draw() {
 
 	// Render geometry
 	for (geometry Geometry : g_geometry) {
-		Geometry.draw();
+		Geometry.render();
 	}
 
 	glPushMatrix();

@@ -150,22 +150,25 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 		}
 	}
 
-	//Create a new mesh for the cut area
-	vertex centroidPoly = getCentre(cutVertices);
-	vector<triangle> mesh = getMesh(cutVertices, centroidPoly);
-	vector<triangle> mesh2 = getMesh(cutVertices, centroidPoly);
+	//If geometry was cut
+	if (cutVertices.size() > 0){
+		//Create a new mesh for the cut area
+		vertex centroidPoly = getCentre(cutVertices);
+		vector<triangle> mesh = getMesh(cutVertices, centroidPoly);
+		vector<triangle> mesh2 = getMesh(cutVertices, centroidPoly);
 
-	//Split the mesh into two
-	for (triangle t : mesh) {
-		triangle newTriangle;
-		newTriangle = separateTriangle(t, 1);
-		geometry1.addToTriangles(newTriangle);
-	}
+		//Split the mesh into two
+		for (triangle t : mesh) {
+			triangle newTriangle;
+			newTriangle = separateTriangle(t, 1);
+			geometry1.addToTriangles(newTriangle);
+		}
 
-	for (triangle t : mesh2) {
-		triangle newTriangle;
-		newTriangle = separateTriangle(t, -1);
-		geometry2.addToTriangles(newTriangle);
+		for (triangle t : mesh2) {
+			triangle newTriangle;
+			newTriangle = separateTriangle(t, -1);
+			geometry2.addToTriangles(newTriangle);
+		}
 	}
 
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
@@ -404,12 +407,18 @@ Creates a vector of triangles representing the mesh formed from the cut area.
 vector<triangle> cut::getMesh(vector<vertex> vertices, vertex centre){
 	vector<triangle> mesh;
 
+	int count = 0;
 	for (int i = 0; i < vertices.size() - 1; i++) {
+		if(count == 1) {
+			count = 0;
+			continue;
+		}
 		triangle t;
 		t.v[0] = centre;
 		t.v[1] = vertices[i];
 		t.v[2] = vertices[i + 1];
 		mesh.push_back(t);
+		count++;
 	}
 
 	return mesh;
