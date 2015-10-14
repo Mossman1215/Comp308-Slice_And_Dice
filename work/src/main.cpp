@@ -67,7 +67,7 @@ Rigidbody* box;
 Rigidbody* box2;
 Physics* physics;
 bool g_paused = false;
-map <geometry*,Rigidbody*>geo_to_rigid;
+
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -133,10 +133,14 @@ void draw() {
 
 
 	// Render geometry
-	for (geometry Geometry : g_geometry) {
-		glPushMatrix();
+	for (unsigned int i=0;i<g_geometry.size();i++ ) {
+	        geometry Geometry = g_geometry[i];
+	        glPushMatrix();
 		//get position from rigidbody corresponding to this geometry object
-		//geo_to_rigid.get(Geometry);
+		Rigidbody* rigid = physics->getRigidbody(i);
+		vec3 position = rigid->update(g_delta);
+		glTranslatef(position.x,position.y,position.z);
+		glColor3f(1.0f,0.0f,0.0f);
 		Geometry.draw();
 		glPopMatrix();
 	}
@@ -306,9 +310,11 @@ void mouseCallback(int button, int state, int x, int y) {
 				allGeometry = g_cut->createCut(plane, g_geometry);
 				
 				g_geometry = allGeometry;
-				//for all geometry objects from geo_to_rigid.size to g_geometry.size
-				//add the new ones to geo_to_rigid
-
+				//for all geometry objects
+				//preserve momentum
+				//clear rigid body list
+				//add all the new rigidbodies post cut
+     				
 			}
 			break;
 
@@ -395,26 +401,32 @@ int main(int argc, char **argv) {
 
 	// Create a light on the camera
 	initLight();
-
+	physics = new Physics();
 	// Finally create our geometry
 	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
+	Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
+	
 	g_geometry.push_back(g_sphere);
-
+	physics->addRigidbody(&rigid);
+	
 	g_cut = new cut();
 	vector<vec3> vertex;
 	vertex.push_back(vec3(-1,1,-1));
 	vertex.push_back(vec3(-1,-1,-1));
 	vertex.push_back(vec3(1,1,1));
 	vertex.push_back(vec3(1,-1,1));
-	physics = new Physics();
 	box = new Rigidbody(vec3(0,10,0),vertex,1);
 	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
-	physics->addRigidbody(box2);
 	physics->addRigidbody(box);
+	physics->addRigidbody(box2);
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();
 
 	// Don't forget to delete all pointers that we made
+	delete box;
+	delete box2;
+	delete physics;
+	delete g_cut;
 	return 0;
 }

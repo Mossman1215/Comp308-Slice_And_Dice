@@ -26,6 +26,7 @@ comp308::vec3 Rigidbody::update(float delta){
 	}
 	force = force*0.99;
 	boundary.position = position;
+	drawBoundingBox(true);
 	return position;
 }
 void Physics::checkCollisions(float delta){
@@ -91,4 +92,47 @@ bool Physics::AABBtoAABB(const TAABB& tBox1,const TAABB& tBox2){
 
 void Physics::addRigidbody(Rigidbody* r){
   objects.push_back(r);
+}
+Rigidbody* Physics::getRigidbody(int position){
+  return objects[position];
+}
+void Physics::clear(){
+  objects.clear();
+}
+void Rigidbody::drawBoundingBox(bool visible){
+  glPushMatrix();
+  glTranslatef(boundary.position.x,boundary.position.y,boundary.position.z);
+  if(visible){
+	glLineWidth(1);
+	glColor3f(0,1,0);
+	 glBegin(GL_LINE_LOOP);
+	 //min z to max z
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMin.y,boundary.m_vecMin.z);
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMin.y,boundary.m_vecMax.z);
+	  //min y to max y 
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMax.y,boundary.m_vecMax.z);
+	  //max y min z
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMax.y,boundary.m_vecMin.z);
+	 glEnd();
+	 glBegin(GL_LINES);
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMin.y,boundary.m_vecMin.z);
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMin.y,boundary.m_vecMin.z);
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMin.y,boundary.m_vecMax.z);
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMin.y,boundary.m_vecMax.z);
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMax.y,boundary.m_vecMax.z);
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMax.y,boundary.m_vecMax.z);
+	  glVertex3f(boundary.m_vecMin.x,boundary.m_vecMax.y,boundary.m_vecMin.z);
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMax.y,boundary.m_vecMin.z);
+	 glEnd();
+	 glBegin(GL_LINE_LOOP);
+	 //min z to max z
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMin.y,boundary.m_vecMin.z);//vecMin.xyz
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMin.y,boundary.m_vecMax.z);//vecMin.xy vecMax.z
+	  //min y to max y 
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMax.y,boundary.m_vecMax.z);
+	  //max y min z
+	  glVertex3f(boundary.m_vecMax.x,boundary.m_vecMax.y,boundary.m_vecMin.z);	 
+	 glEnd();
+  }
+  glPopMatrix();
 }

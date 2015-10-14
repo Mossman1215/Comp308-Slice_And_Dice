@@ -45,7 +45,7 @@ private:
 	comp308::vec3 force;//sum of all forces
 	comp308::vec3 torque;//sum of all torques
 	std::vector<comp308::vec3> mesh;
-
+  void drawBoundingBox(bool);
   void findMax(){
     float min = -std::numeric_limits<float>::max();
     comp308::vec3 max(min,min,min);
@@ -103,6 +103,8 @@ public:
   void initialiseCollisions();
   bool  AABBtoAABB(const TAABB& tBox1,const TAABB& tBox2);
   void addRigidbody(Rigidbody*);
+  Rigidbody* getRigidbody(int position);
+  void clear();
 private:
 	float currentTime;
 	std::vector<Rigidbody*> objects;
