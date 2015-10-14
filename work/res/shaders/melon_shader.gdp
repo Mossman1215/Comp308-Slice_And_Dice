@@ -21,19 +21,16 @@
   </FPCount>
   <TexturesPlugins NumberOfPlugins="0" />
   <TexturedUsed NumberUsedTU="0" />
-  <UniformVariables NumberOfVariables="4">
+  <UniformVariables NumberOfVariables="3">
     <Uniform0 Type="5" Name="age" ArraySize="1" Widget="0" Min="0" Max="1" Step="0.001">
       <Values Value0="4" />
     </Uniform0>
     <Uniform1 Type="5" Name="decayRate" ArraySize="1" Widget="0" Min="0" Max="1" Step="0.001">
       <Values Value0="10" />
     </Uniform1>
-    <Uniform2 Type="11" Name="MODELVIEW_INVERSE" ArraySize="1" Widget="1855247038" Min="1.550592E-37" Max="1.129808E+28" Step="3.760316E-36">
-      <Values />
-    </Uniform2>
-    <Uniform3 Type="5" Name="radius" ArraySize="1" Widget="0" Min="0" Max="1" Step="0.001">
+    <Uniform2 Type="5" Name="radius" ArraySize="1" Widget="0" Min="0" Max="1" Step="0.001">
       <Values Value0="0.8" />
-    </Uniform3>
+    </Uniform2>
   </UniformVariables>
   <FogParameters FogColorR="0" FogColorG="0" FogColorB="0" FogColorA="1" Density="1" Start="0" End="1" />
   <VertexProcessor CullFace="True" PolygonMode="DummieField" PolygonModeBack="6914" PolygonModeFront="6914" LocalValue="1" TwoSidedValue="0" ColorControlValue="33273" />

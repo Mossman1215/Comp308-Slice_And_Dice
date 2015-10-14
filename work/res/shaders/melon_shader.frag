@@ -1,17 +1,27 @@
 #version 120
+#define pi = 3.1415926535897932384626433832795;
 
 uniform float age;
 uniform float decayRate;
 uniform float radius;
 varying vec3 vWorldPosition;
 varying float vDist;
+varying vec3[30] seeds;
 
 void main()
 {
 	float dist = vDist;
 	float choice = dist/radius;
 	vec4 base = vec4(0, 0, 0, 0);
-	if (choice > 0.9){
+	bool seed = false;
+	for (int i = 0; i < seeds.length; i++){
+		if (distance(vWorldPosition, seeds[i]) < 0.1){
+			seed = true;
+		}
+	}
+	if (seed){
+		base = vec4(0, 0, 0, 0);
+	} else if (choice > 0.9){
 		base = vec4(0, 0.6, 0.2, 1);
 	} else if (choice > 0.89){
 		base = vec4(0.7, 0.95, 0.9, 1);
