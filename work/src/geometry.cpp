@@ -23,17 +23,11 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-//geometry::geometry(vector<vector<vec3>> triangles) {
-//	m_color = normalize(random_vec3());
-//	allTriangles = triangles;
-//}
-
 geometry::geometry(string filename){
 	m_color = normalize(random_vec3());
 
 	readOBJ(filename);
 	if (m_triangles.size() > 0) {
-		//allTriangles = createDisplayListPoly();
 		createDisplayListPoly();
 	}
 }
@@ -233,7 +227,6 @@ void geometry::createNormals() {
 }
 
 void geometry::createDisplayListPoly() {
-
 	// Delete old list if there is one
 	if (m_displayListPoly) glDeleteLists(m_displayListPoly, 1);
 
@@ -264,32 +257,16 @@ void geometry::createDisplayListPoly() {
 	cout << "Finished creating Poly Geometry" << endl;
 }
 
-void geometry::draw() {
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-
-	//Render geometry
-	render();
-
-	// Clean up
-	glPopMatrix();
-
-}
-
 void geometry::render() {
 	glShadeModel(GL_SMOOTH);
 	glCallList(m_displayListPoly);
-	//glColor3f(m_color.x, m_color.y, m_color.z);
-	//glBegin(GL_TRIANGLES);
-	//for (triangle t : allTriangles) {
-	//	glNormal3f(t.v[0].n, t.v[1].n, t.v[2].n);
-	//	//glTexCoord2f(t.v[0].t, t.v[1].t, t.v[2].t);
-	//	glVertex3f(t.v[0].p, t.v[1].p, t.v[2].p);
-	//}
-	//glEnd();
+
 	glBegin(GL_TRIANGLES);
 
 	for (triangle t : m_triangles) {
+
+		//m_color = normalize(random_vec3());
+		//glColor3f(m_color.x, m_color.y, m_color.z);
 
 		glNormal3f(t.v[0].n.x, t.v[0].n.y, t.v[0].n.z);
 		glTexCoord2f(t.v[0].t.x, t.v[0].t.y);

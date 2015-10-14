@@ -80,9 +80,9 @@ void initLight() {
 	glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffintensity);
 	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);	
 	
+	
 	glEnable(GL_LIGHT0);
 }
-
 
 // Sets up where the camera is in the scene
 // Called every frame
@@ -126,7 +126,6 @@ void draw() {
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
 
-
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
 	glColor3f(1.0f,0.0f,0.0f);
@@ -139,23 +138,25 @@ void draw() {
 	        geometry Geometry = g_geometry[i];     
 		//get position from rigidbody corresponding to this geometry object
 		glColor3f(1.0f,0.0f,0.0f);
-		Geometry.draw();
-		
+		Geometry.render();
 	}
 	glPopMatrix();
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
+	    glColor3f(1,0,0);
 	    glutSolidCube(1);
 	glPopMatrix();
-	glPushMatrix();    
-	  vec3 position2 = box2->update(g_delta);
-	  glTranslatef(position2.x,position2.y,position2.z);
-	  glutSolidCube(1);
+	glPushMatrix();
+	    vec3 position2 = box2->update(g_delta);
+	    glTranslatef(position2.x,position2.y,position2.z);
+	    glColor3f(1,0,0);
+	    glutSolidCube(1);
 	glPopMatrix();
-	physics->checkCollisions(g_delta);
 	glDisable(GL_LIGHTING);
+	physics->checkCollisions(g_delta);
 	glEnable(GL_BLEND);
+
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
 	glBegin(GL_QUADS);
@@ -171,22 +172,12 @@ void draw() {
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
-	glColor3f(1, 0, 0);
-	glLineWidth(1);
-	glBegin(GL_LINES);
-	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
-	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
-	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
-	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
-	glEnd();
-
 	glutSwapBuffers();
 
 	// Queue the next frame to be drawn straight away
 	glutPostRedisplay();
 	g_delta =(float)((glutGet(GLUT_ELAPSED_TIME) - g_start_time)/1000);
 }
-
 
 
 vec3 myUnProject(int x, int y, int z) {
@@ -243,26 +234,27 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	if(key ==' '){
 		g_paused= !g_paused;
 	}
-	switch(key){
-	case 'j':
-		box2->addForce(vec3(-1,0,0));
-		break;
-	case 'l':
-		box2->addForce(vec3(1,0,0));
-		break;
-	case 'i':
-		box2->addForce(vec3(0,1,0));
-		break;
-	case 'k':
-		box2->addForce(vec3(0,-1,0));
-		break;
-	case 'n':
-		box2->addForce(vec3(0,0,-1));
-		break;
-	case 'm':
-		box2->addForce(vec3(0,0,1));
-		break;
-	}
+     switch(key){
+     case 'j':
+             box2->addForce(vec3(-1,0,0));
+               break;
+       case 'l':
+               box2->addForce(vec3(1,0,0));
+             break;
+       case 'i':
+              box2->addForce(vec3(0,1,0));
+              break;
+       case 'k':
+               box2->addForce(vec3(0,-1,0));
+               break;
+       case 'n':
+               box2->addForce(vec3(0,0,-1));
+              break;
+       case 'm':
+               box2->addForce(vec3(0,0,1));
+               break;
+       }
+
 }
 
 
@@ -365,7 +357,7 @@ int main(int argc, char **argv) {
 
 	// Initialise window size and create window
 	glutInitWindowSize(g_winWidth, g_winHeight);
-	g_mainWindow = glutCreateWindow("COMP308 Final Project");
+	g_mainWindow = glutCreateWindow("COMP308 Assignment 2");
 
 
 	// Initilise GLEW
@@ -398,18 +390,17 @@ int main(int argc, char **argv) {
 	initLight();
 	physics = new Physics();
 	// Finally create our geometry
-	geometry g_sphere = geometry("../work/res/assets/bunny.obj");
+	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
 	Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
-	
 	g_geometry.push_back(g_sphere);
 	physics->addRigidbody(&rigid);
 	
 	g_cut = new cut();
 	vector<vec3> vertex;
-	vertex.push_back(vec3(-1,1,-1));
-	vertex.push_back(vec3(-1,-1,-1));
-	vertex.push_back(vec3(1,1,1));
-	vertex.push_back(vec3(1,-1,1));
+	vertex.push_back(vec3(-.5,.5,-.5));
+	vertex.push_back(vec3(-.5,-.5,-.5));
+	vertex.push_back(vec3(.5,.5,.5));
+	vertex.push_back(vec3(.5,-.5,.5));
 	box = new Rigidbody(vec3(0,10,0),vertex,1);
 	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
 	physics->addRigidbody(box);
