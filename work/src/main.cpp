@@ -136,8 +136,7 @@ void draw() {
 	glTranslatef(pos.x,pos.y,pos.z);
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
-	        geometry Geometry = g_geometry[i];
-	        
+	        geometry Geometry = g_geometry[i];     
 		//get position from rigidbody corresponding to this geometry object
 		glColor3f(1.0f,0.0f,0.0f);
 		Geometry.draw();
@@ -156,7 +155,6 @@ void draw() {
 	glPopMatrix();
 	physics->checkCollisions(g_delta);
 	glDisable(GL_LIGHTING);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
@@ -300,6 +298,7 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				//Create cut upon mouse release.
 				vector<vec3> plane;
+				vec3 pos = physics->getRigidbody(0)->boundary.position;
 				plane.push_back(cut_proj_1);
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
