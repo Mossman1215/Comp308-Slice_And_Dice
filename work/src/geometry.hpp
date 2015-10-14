@@ -45,4 +45,5 @@ public:
 	std::vector<triangle> getTriangles();
 	void addToTriangles(triangle triangle);
 	virtual ~geometry();
+        std::vector<comp308::vec3> getPoints();
 };

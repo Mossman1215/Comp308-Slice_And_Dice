@@ -299,9 +299,9 @@ void geometry::addToTriangles(triangle triangle) {
 //	return m_uvs;
 //}
 //
-//vector<vec3> geometry::getPoints() {
-//	return m_points;
-//}
+vector<vec3> geometry::getPoints() {
+	return m_points;
+}
 //
 //void geometry::setNormals(vector<vec3>) {
 //

@@ -369,7 +369,6 @@ triangle cut::separateTriangle(triangle t, int direction) {
 
 	//Translation magnitude
 	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
-
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 

@@ -20,6 +20,7 @@
 #include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
+#include <map>
 
 using namespace std;
 using namespace comp308;
@@ -36,7 +37,7 @@ GLuint g_mainWindow = 0;
 // 
 float g_fovy = 20.0;
 float g_znear = 0.1;
-float g_zfar = 100;
+float g_zfar = 1000;
 
 
 // Mouse controlled Camera values
@@ -63,7 +64,10 @@ float g_delta=0;
 vector<geometry> g_geometry;
 cut *g_cut = nullptr;
 Rigidbody* box;
+Rigidbody* box2;
+Physics* physics;
 bool g_paused = false;
+
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -122,26 +126,37 @@ void draw() {
 	glEnable(GL_NORMALIZE);
 	glEnable(GL_COLOR_MATERIAL);
 
-
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
 	glColor3f(1.0f,0.0f,0.0f);
-
-
+	glPushMatrix();
+	Rigidbody* rigid = physics->getRigidbody(0);
+	vec3 pos = rigid->update(g_delta);
+	glTranslatef(pos.x,pos.y,pos.z);
 	// Render geometry
-	for (geometry Geometry : g_geometry) {
+	for (unsigned int i=0;i<g_geometry.size();i++ ) {
+	        geometry Geometry = g_geometry[i];     
+		//get position from rigidbody corresponding to this geometry object
+		glColor3f(1.0f,0.0f,0.0f);
 		Geometry.render();
 	}
-
+	glPopMatrix();
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
+	    glColor3f(1,0,0);
 	    glutSolidCube(1);
 	glPopMatrix();
-
+	glPushMatrix();
+	    vec3 position2 = box2->update(g_delta);
+	    glTranslatef(position2.x,position2.y,position2.z);
+	    glColor3f(1,0,0);
+	    glutSolidCube(1);
+	glPopMatrix();
 	glDisable(GL_LIGHTING);
+	physics->checkCollisions(g_delta);
+	glEnable(GL_BLEND);
 
-	/*glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
 	glBegin(GL_QUADS);
@@ -150,21 +165,12 @@ void draw() {
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
-	glDisable(GL_BLEND);*/
+	glDisable(GL_BLEND);
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
-
-	glColor3f(1, 0, 0);
-	glLineWidth(1);
-	glBegin(GL_LINES);
-	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
-	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
-	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
-	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
-	glEnd();
 
 	glutSwapBuffers();
 
@@ -172,7 +178,6 @@ void draw() {
 	glutPostRedisplay();
 	g_delta =(float)((glutGet(GLUT_ELAPSED_TIME) - g_start_time)/1000);
 }
-
 
 
 vec3 myUnProject(int x, int y, int z) {
@@ -229,6 +234,27 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	if(key ==' '){
 		g_paused= !g_paused;
 	}
+     switch(key){
+     case 'j':
+             box2->addForce(vec3(-1,0,0));
+               break;
+       case 'l':
+               box2->addForce(vec3(1,0,0));
+             break;
+       case 'i':
+              box2->addForce(vec3(0,1,0));
+              break;
+       case 'k':
+               box2->addForce(vec3(0,-1,0));
+               break;
+       case 'n':
+               box2->addForce(vec3(0,0,-1));
+              break;
+       case 'm':
+               box2->addForce(vec3(0,0,1));
+               break;
+       }
+
 }
 
 
@@ -264,15 +290,18 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				//Create cut upon mouse release.
 				vector<vec3> plane;
+				vec3 pos = physics->getRigidbody(0)->boundary.position;
 				plane.push_back(cut_proj_1);
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
-
 				vector<geometry> allGeometry;
-
 				allGeometry = g_cut->createCut(plane, g_geometry);
-
 				g_geometry = allGeometry;
+				//for all geometry objects
+				//preserve momentum
+				//clear rigid body list
+				//add all the new rigidbodies post cut
+     				
 			}
 			break;
 
@@ -359,31 +388,31 @@ int main(int argc, char **argv) {
 
 	// Create a light on the camera
 	initLight();
-
+	physics = new Physics();
 	// Finally create our geometry
-	vector<vec3> vertices;
-	vec3 v1(-5.0, -5.0, 5.0);
-	vec3 v2(-5.0, 5.0, -2.5);
-	vec3 v3(5.0, 5.0, -5.0);
-	vertices.push_back(v1);
-	vertices.push_back(v2);
-	vertices.push_back(v3);
-	vector<vector<vec3>> triangles;
-	triangles.push_back(vertices);
-
-	//geometry triangle = geometry(triangles);
-	//g_geometry.push_back(triangle);
-
 	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
+	Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
 	g_geometry.push_back(g_sphere);
-
+	physics->addRigidbody(&rigid);
+	
 	g_cut = new cut();
-	box = new Rigidbody(vec3(0,10,0),vector<vec3>(),1);
-	box->addForce(vec3(0,-9.81,0));
+	vector<vec3> vertex;
+	vertex.push_back(vec3(-.5,.5,-.5));
+	vertex.push_back(vec3(-.5,-.5,-.5));
+	vertex.push_back(vec3(.5,.5,.5));
+	vertex.push_back(vec3(.5,-.5,.5));
+	box = new Rigidbody(vec3(0,10,0),vertex,1);
+	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
+	physics->addRigidbody(box);
+	physics->addRigidbody(box2);
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();
 
 	// Don't forget to delete all pointers that we made
+	delete box;
+	delete box2;
+	delete physics;
+	delete g_cut;
 	return 0;
 }
