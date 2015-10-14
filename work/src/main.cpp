@@ -130,21 +130,20 @@ void draw() {
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
 	glColor3f(1.0f,0.0f,0.0f);
-
-
+	glPushMatrix();
+	Rigidbody* rigid = physics->getRigidbody(0);
+	vec3 pos = rigid->update(g_delta);
+	glTranslatef(pos.x,pos.y,pos.z);
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
 	        geometry Geometry = g_geometry[i];
-	        glPushMatrix();
+	        
 		//get position from rigidbody corresponding to this geometry object
-		Rigidbody* rigid = physics->getRigidbody(i);
-		vec3 position = rigid->update(g_delta);
-		glTranslatef(position.x,position.y,position.z);
 		glColor3f(1.0f,0.0f,0.0f);
 		Geometry.draw();
-		glPopMatrix();
+		
 	}
-
+	glPopMatrix();
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
