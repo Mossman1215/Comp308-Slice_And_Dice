@@ -2,17 +2,17 @@
 
 varying float vDist;
 varying vec3 vWorldPosition;
-varying vec3[30] seeds;
+varying vec3[31] seeds;
 
-vec3[30] buildSeeds(){
-	int n = 30;
-	vec3 nodes[30];
-	float dlong = 3.6;  /* ~2.39996323 */
+vec3[31] buildSeeds(){
+	int n = 31;
+	vec3 nodes[31];
+	float dlong = 2.4;  /* ~2.39996323 */
 	float dz = 2.0/n;
 	float long = 0;
 	float z = 1 - dz/2;
 	float r = 0;
-	for (int k = 0; k < n-1; k++){
+	for (int k = 0; k < n; k++){
 	    float r = sqrt(1-z*z);
 	    vec3 raw = vec3(cos(long)*r, z, sin(long)*r);
 	    vec4 condensed = gl_ModelViewMatrixInverse * vec4(raw, 0);
@@ -20,10 +20,6 @@ vec3[30] buildSeeds(){
 	    z = z - dz;
 	    long = long + dlong;
 	}
-	r = sqrt(1-z*z);
-	vec3 raw = vec3(cos(long)*r, z, sin(long)*r);
-	vec4 condensed = gl_ModelViewMatrixInverse * vec4(raw, 0);
-	nodes[n-1] = vec3(condensed.x, condensed.y, condensed.z);
 	return nodes;
 }
 
