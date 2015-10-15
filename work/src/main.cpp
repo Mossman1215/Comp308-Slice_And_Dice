@@ -402,7 +402,8 @@ int main(int argc, char **argv) {
 	physics = new Physics();
 	// Finally create our geometry
 	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
-	Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
+	vector<vec3> object_pts = g_sphere.getPoints();
+	Rigidbody rigid = Rigidbody(vec3(0,0,0),object_pts,1,object_pts.size(),vec3(0,0,0));
 	g_geometry.push_back(g_sphere);
 	physics->addRigidbody(&rigid);
 	
@@ -412,8 +413,8 @@ int main(int argc, char **argv) {
 	vertex.push_back(vec3(-.5,-.5,-.5));
 	vertex.push_back(vec3(.5,.5,.5));
 	vertex.push_back(vec3(.5,-.5,.5));
-	box = new Rigidbody(vec3(0,10,0),vertex,1);
-	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1);
+	box = new Rigidbody(vec3(0,10,0),vertex,1,vertex.size(),vec3(0,0,0));
+	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1,vertex.size(),vec3(0,0,0));
 	physics->addRigidbody(box);
 	physics->addRigidbody(box2);
 	// Loop required by OpenGL

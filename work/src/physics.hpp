@@ -32,7 +32,7 @@ public:
 		  //find min values for x,y,z
 		findMin();
 		boundary.position = base;
-		vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
+		comp308::vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
 		addForce(momentum);
 	};
 	void addForce(comp308::vec3 force);
