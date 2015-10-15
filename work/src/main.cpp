@@ -67,9 +67,13 @@ cut *g_cut = nullptr;
 Rigidbody* box;
 Rigidbody* box2;
 Physics* physics;
+
+// Utility variables
 bool g_paused = false;
 bool g_slow = false;
 bool g_bounds = false;
+
+geometry original;
 
 // SHADERS CODES.
 GLuint shader_code = 0;
@@ -192,6 +196,10 @@ void draw() {
 	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glVertex3f(100, 0, 100);
+	glVertex3f(-100, 0, 100);
+	glVertex3f(-100, 0, -100);
+	glVertex3f(100, 0, -100);
 	glEnd();
 	glDisable(GL_BLEND);
 
@@ -255,6 +263,11 @@ void reshape(int w, int h) {
     glViewport(0, 0, g_winWidth, g_winHeight);  
 }
 
+void reset() {
+	g_geometry.clear();
+	g_geometry.push_back(original);
+}
+
 // Keyboard callback
 // Called once per button state change
 //
@@ -296,6 +309,9 @@ void keyboardCallback(unsigned char key, int x, int y) {
 		   break;
 	   case 'b':
 		   g_bounds = !g_bounds;
+		   break;
+	   case 'r':
+		   reset();
 		   break;
        }
 
@@ -419,7 +435,7 @@ int main(int argc, char **argv) {
 	physics = new Physics();
 	// Finally create our geometry
 	geometry g_sphere = geometry("../work/res/assets/sphere.obj", physics);
-	vector<vec3> object_pts = g_sphere.getPoints();
+	original = g_sphere;
 	g_geometry.push_back(g_sphere);
 
 	g_cut = new cut();
