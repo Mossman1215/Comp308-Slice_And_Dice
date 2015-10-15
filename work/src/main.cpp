@@ -196,6 +196,10 @@ void draw() {
 	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glVertex3f(100, 0, 100);
+	glVertex3f(-100, 0, 100);
+	glVertex3f(-100, 0, -100);
+	glVertex3f(100, 0, -100);
 	glEnd();
 	glDisable(GL_BLEND);
 
