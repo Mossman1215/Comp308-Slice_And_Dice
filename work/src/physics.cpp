@@ -11,18 +11,39 @@ void Rigidbody::addForce(vec3 force){
 
 comp308::vec3 Rigidbody::update(float delta, bool bounding){
 	//apply forces
-	addForce(vec3(0,-9.81*delta,0));
+	this->addForce(vec3(0,-9.81*delta,0));
 	vec3 acceleration = force/mass;
 	//change position
-	if(position.y + (acceleration.y * delta) > 0){
-		position = position + (acceleration*delta);
-		for(int i =0;i< mesh.size();i++){
-		  mesh[i]+=position;
-		}
+	if(position.y +boundary.m_vecMin.y + (acceleration.y * delta) > 0){
+	  if(position.x>10){
+	    acceleration.x = 0;
+	    position.x = 10;
+	  }
+	  if(position.x<-10){
+	    acceleration.x = 0;
+	    position.x = -10;
+	  }
+	  if(position.y>10){
+	    acceleration.y = 0;
+	      position.x = 10;
+	  }
+  	  if(position.z>10){
+	    acceleration.z = 0;
+	    position.z = 10;
+	  }
+	  if(position.z<-10){
+	    acceleration.z = 0;
+	    position.z = -10;
+	  }
+         
+	  position = position + (acceleration*delta);
+	  
 	}else {
-		addForce(vec3(0,-force.y,0));
+		this->addForce(vec3(0,-force.y,0));
 		position = position + ((force/mass)*delta);
-		force = force*0.9;
+		position.y = -boundary.m_vecMin.y;
+		force.x = force.x*0.9;
+		force.z = force.z*0.9;
 	}
 	force = force*0.99;
 	boundary.position = position;
@@ -49,23 +70,22 @@ void Physics::checkCollisions(float delta){
       }  
     }
   }
-  //resolve collisions
+  //resolve collision
+  //for each object in collisions list
+  //check all vertex & edge & face for separating plane if they fail bounding box check
+  //check that vertex or edge ,delta + tolerance, changes the separating plane, meaning that they are no longer disjoint?
   for(unsigned int k=0;k<collisions.size();k++){
 	Collision c =  collisions[k];
 	vec3 forceA;
 	forceA = c.a->position - c.b->position;
-	
 	float r = length(forceA);
-	c.a->addForce(forceA/(r*r));
+	c.a->addForce(forceA/r);
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
-	c.b->addForce(forceB/(r*r));
+	c.b->addForce(forceB/(r));
 	
   }
   collisions.clear();
-  //for each object in collisions list
-  //check all vertex & edge & face for separating plane if they fail bounding box check
-  //check that vertex or edge ,delta + tolerance, changes the separating plane, meaning that they are no longer disjoint?
 
   
 }
@@ -97,10 +117,7 @@ void Physics::remove(Rigidbody* rb){
   unsigned int count =0;
   while(count< objects.size()){
     Rigidbody* array =objects[count];
-    cout <<"rb:"<< rb <<endl;
-    cout <<"objects[count] "<<objects[count]<<endl;
     if(array==rb){
-    cout <<"equality!!!"<< rb <<endl;
       break;
     }
     count++;

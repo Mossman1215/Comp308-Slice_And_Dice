@@ -66,6 +66,8 @@ vector<geometry> g_geometry;
 cut *g_cut = nullptr;
 Rigidbody* box;
 Rigidbody* box2;
+Rigidbody* box3;
+Rigidbody* box4;
 Physics* physics;
 
 // Utility variables
@@ -171,21 +173,7 @@ void draw() {
 		glPopMatrix();
 	}
 	glUseProgram(0);
-	
-	//glPushMatrix();
-	//    vec3 position = box->update(g_delta);
-	//glPushMatrix();
-	//    vec3 position = box->update(g_delta, g_bounds);
-	//    glTranslatef(position.x,position.y,position.z);
-	//    glColor3f(1,0,0);
-	//    glutSolidCube(1);
-	//glPopMatrix();
-	//glPushMatrix();
-	//    vec3 position2 = box2->update(g_delta, g_bounds);
-	//    glTranslatef(position2.x,position2.y,position2.z);
-	//    glColor3f(1,0,0);
-	//    glutSolidCube(1);
-	//glPopMatrix();
+        
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
 
@@ -286,25 +274,7 @@ void keyboardCallback(unsigned char key, int x, int y) {
 		g_paused= !g_paused;
 	}
      switch(key){
-     case 'j':
-             box2->addForce(vec3(-1,0,0));
-               break;
-       case 'l':
-               box2->addForce(vec3(1,0,0));
-             break;
-       case 'i':
-              box2->addForce(vec3(0,1,0));
-              break;
-       case 'k':
-               box2->addForce(vec3(0,-1,0));
-               break;
-       case 'n':
-               box2->addForce(vec3(0,0,-1));
-              break;
-       case 'm':
-               box2->addForce(vec3(0,0,1));
-			   break;
-	   case '[':
+     	   case '[':
 		   g_slow = !g_slow;
 		   break;
 	   case 'b':
@@ -350,18 +320,13 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				//Create cut upon mouse release.
 				vector<vec3> plane;
-				vec3 pos = physics->getRigidbody(0)->boundary.position;
-				plane.push_back(cut_proj_1);
+								plane.push_back(cut_proj_1);
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
 				vector<geometry> allGeometry;
 				allGeometry = g_cut->createCut(plane, g_geometry, physics);
 				g_geometry = allGeometry;
-				//for all geometry objects
-				//preserve momentum
-				//clear rigid body list
-				//add all the new rigidbodies post cut
-     				
+				
 			}
 			break;
 
@@ -439,16 +404,6 @@ int main(int argc, char **argv) {
 	g_geometry.push_back(g_sphere);
 
 	g_cut = new cut();
-	vector<vec3> vertex;
-	vertex.push_back(vec3(-.5, .5, -.5));
-	vertex.push_back(vec3(-.5, -.5, -.5));
-	vertex.push_back(vec3(.5, .5, .5));
-	vertex.push_back(vec3(.5, -.5, .5));
-	/*box = new Rigidbody(vec3(0, 10, 0), vertex, 1, vertex.size(), vec3(0, 0, 0));
-	box2 = new Rigidbody(vec3(.5, 20, .5), vertex, 1, vertex.size(), vec3(0, 0, 0));
-	physics->addRigidbody(box);
-	physics->addRigidbody(box2);*/
-
 	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &shader_code);
 
 	// Register functions for callback
@@ -472,8 +427,6 @@ int main(int argc, char **argv) {
 	glutMainLoop();
 
 	// Don't forget to delete all pointers that we made
-	delete box;
-	delete box2;
 	delete physics;
 	delete g_cut;
 	return 0;
