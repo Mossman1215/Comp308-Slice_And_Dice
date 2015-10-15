@@ -225,6 +225,8 @@ void geometry::createNormals() {
 	}
 	cout << "Smoothing complete." << endl;
 
+	rigidbody = new Rigidbody(vec3(0, 0, 0), m_points, 1, m_points.size(), vec3(0, 0, 0));
+
 }
 
 void geometry::createDisplayListPoly() {
@@ -292,27 +294,23 @@ void geometry::addToTriangles(triangle triangle) {
 	m_triangles.push_back(triangle);
 }
 
-//vector<vec3> geometry::getNormals() {
-//	return m_normals;
-//}
-//
-//vector<vec2> geometry::getTextures() {
-//	return m_uvs;
-//}
-//
+Rigidbody* geometry::getRigidbody() {
+	return rigidbody;
+}
+
+void geometry::setRigidbody(Rigidbody* r) {
+	rigidbody = r;
+}
+
 vector<vec3> geometry::getPoints() {
+	m_points.clear();
+	for (triangle t : m_triangles) {
+		m_points.push_back(t.v[0].p);
+		m_points.push_back(t.v[1].p);
+		m_points.push_back(t.v[2].p);
+	}
 	return m_points;
 }
-//
-//void geometry::setNormals(vector<vec3>) {
-//
-//}
-//void geometry::setTextures(vector<vec2>) {
-//
-//}
-//void geometry::setPoints(vector<vec3>) {
-//
-//}
 
 geometry::~geometry(){}
 

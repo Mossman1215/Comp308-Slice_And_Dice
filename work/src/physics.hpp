@@ -17,6 +17,7 @@ struct TAABB
 
 class Rigidbody{
 public:
+	comp308::vec3 force;//sum of all forces
 	comp308::vec3 update(float);
 	void rollBack(float);
         TAABB boundary;
@@ -44,7 +45,6 @@ private:
 	comp308::vec4 rotation;
 	comp308::vec3 linearVelocity;//current velocity
 	comp308::vec3 angularVelocity;//current angular velocity
-	comp308::vec3 force;//sum of all forces
 	comp308::vec3 torque;//sum of all torques
 	std::vector<comp308::vec3> mesh;
   void drawBoundingBox(bool);

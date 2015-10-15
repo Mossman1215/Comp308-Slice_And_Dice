@@ -8,10 +8,11 @@
 #include <vector>
 #include "comp308.hpp"
 #include "geometry.hpp"
+#include "physics.hpp"
 
 class cut {
 private:
-	std::vector<geometry> cutGeometry(geometry geometry);
+	std::vector<geometry> cutGeometry(geometry geometry, Physics *p);
 	comp308::vec3 findNormal();
 	int isInFront(comp308::vec3 vertex);
 	float calculateDisplacement(comp308::vec3 normal);
@@ -28,5 +29,5 @@ private:
 	vertex getCentre(std::vector<vertex> polygon);
 public:
 	cut();
-	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry);
+	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry, Physics *p);
 };
