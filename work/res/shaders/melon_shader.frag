@@ -20,7 +20,7 @@ vec3 getSeed(int instance, int count){
 	z = z - (dz * instance);
 	r = sqrt(1-z*z);
 	float modifier = 0.9 + ((sin((r * 12.3 + z * 94.8 + my_long * 123.75) * 436.4)) * 0.1);
-	vec3 raw = vec3(cos(my_long)*r, z, sin(my_long)*r) * 0.6 * modifier * radius;
+	vec3 raw = vec3(cos(my_long)*r, z, sin(my_long)*r) * 0.7 * modifier * radius;
 	vec4 condensed = gl_ModelViewMatrixInverse * vec4(raw, 0);
 	return vec3(condensed.x, condensed.y, condensed.z);
 }
@@ -32,22 +32,22 @@ void main()
 	vec4 base = vec4(0, 0, 0, 0);
 	bool seed = false;
 	for (int i = 0; i < seedCount; i++){
-		if (distance(vWorldPosition, getSeed(i, seedCount)) < 0.04){
+		if (distance(vWorldPosition, getSeed(i, seedCount)) < 0.07){
 			seed = true;
 			base = vec4(0.1, 0.05, 0.05, 1);
 			break;
 		}
 	}
 	if (!seed){
-		if (choice > 0.9){
+		if (choice > 0.95){
 			base = vec4(0, 0.6, 0.2, 1);
-		} else if (choice > 0.89){
+		} else if (choice > 0.94){
 			base = vec4(0.7, 0.95, 0.9, 1);
-		} else if (choice > 0.8){
+		} else if (choice > 0.9){
 			base = vec4(0.9, 1, 0.98, 1);
-		} else if (choice > 0.75){
+		} else if (choice > 0.85){
 			base = vec4(1, 0.9, 1, 1);
-		} else if (choice > 0.7){
+		} else if (choice > 0.75){
 			base = vec4(1, 0.3, 0.6, 1);
 		} else if (choice > 0.6){
 			base = vec4(1, 0.25, 0.5, 1);
