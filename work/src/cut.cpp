@@ -14,6 +14,7 @@ using namespace std;
 using namespace comp308;
 
 vector<vec3> cutPlane;
+vector<vec3> originalPlane;
 vec3 normal;
 float planeD;
 
@@ -36,8 +37,7 @@ and return new geometry resulting from the cut.
 */
 vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys, Physics *p) {
 	cutPlane = plane;
-	vec3 normal = findNormal();
-	planeD = calculateDisplacement(normal);
+	originalPlane = plane;
 	int triCount = 0;
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
@@ -67,6 +67,18 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	int intersects = 0;
 	vector<triangle> tempTriangles;
 	vector<vertex> cutVertices;
+	Rigidbody* parent = g_geometry.getRigidbody();
+
+	for (int i = 0; i < 3; i++) {
+		cutPlane[i].x = cutPlane[i].x - parent->position.x;
+		cout << cutPlane[i].x << endl;
+		cutPlane[i].y = cutPlane[i].y - parent->position.y;
+		cout << cutPlane[i].y << endl;
+		cutPlane[i].z = cutPlane[i].z - parent->position.z;
+		cout << cutPlane[i].z << endl;
+	}
+	vec3 normal = findNormal();
+	planeD = calculateDisplacement(normal);
 
 	for (triangle t : g_geometry.getTriangles()) {
 		vector<vertex> intersectVertices;
@@ -186,32 +198,21 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	vector<geometry> bothGeometrys;
 
 	if(geometry1.getTriangles().size() == 0){	//If this geometry is empty, add parent rigidbody to geometry2
-		//vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
-		Rigidbody* parent = g_geometry.getRigidbody();
-		//Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
-		//p->addRigidbody(parent);
 		geometry2.setRigidbody(parent);
 		bothGeometrys.push_back(geometry2);
 	}
 	else if (geometry2.getTriangles().size() == 0) {	//If this geometry is empty, add parent rigidbody to geometry1
-		//vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		Rigidbody* parent = g_geometry.getRigidbody();
-		//Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
-		//p->addRigidbody(parent);
 		geometry1.setRigidbody(parent);
 		bothGeometrys.push_back(geometry1);
 	}
 	else {	//Else add new rigidbody to both as this geometry has been cut
-		cout << "reached 1" << endl;
 		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		Rigidbody* parent = g_geometry.getRigidbody();
 		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 
 		rigidBase = getGeometryCentre(geometry2.getPoints());
-		//Rigidbody* parent = g_geometry.getRigidbody();
 		child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		geometry2.setRigidbody(child);
 		p->addRigidbody(child);
@@ -219,24 +220,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		p->remove(g_geometry.getRigidbody());
 	}
 
-	/*if (geometry1.getTriangles().size() > 0) {
-		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		Rigidbody* parent = g_geometry.getRigidbody();
-		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
-		p->addRigidbody(child);
-		geometry1.setRigidbody(child);
-		bothGeometrys.push_back(geometry1);
-	}
-
-	if (geometry2.getTriangles().size() > 0) {
-		cout << "reached 2" << endl;
-		vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
-		Rigidbody* parent = g_geometry.getRigidbody();
-		Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
-		geometry2.setRigidbody(child);
-		p->addRigidbody(child);
-		bothGeometrys.push_back(geometry2);
-	}*/
+	cutPlane = originalPlane;
 	cout << "cutting complete" << endl;
 	return bothGeometrys;
 }

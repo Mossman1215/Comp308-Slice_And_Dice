@@ -167,7 +167,7 @@ void draw() {
 		glUseProgram(0);
 	}
 	
-	glPushMatrix();
+	/*glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);
 	    glColor3f(1,0,0);
@@ -178,7 +178,7 @@ void draw() {
 	    glTranslatef(position2.x,position2.y,position2.z);
 	    glColor3f(1,0,0);
 	    glutSolidCube(1);
-	glPopMatrix();
+	glPopMatrix();*/
 	glDisable(GL_LIGHTING);
 	glEnable(GL_BLEND);
 
@@ -422,10 +422,10 @@ int main(int argc, char **argv) {
 	vertex.push_back(vec3(-.5, -.5, -.5));
 	vertex.push_back(vec3(.5, .5, .5));
 	vertex.push_back(vec3(.5, -.5, .5));
-	box = new Rigidbody(vec3(0, 10, 0), vertex, 1, vertex.size(), vec3(0, 0, 0));
+	/*box = new Rigidbody(vec3(0, 10, 0), vertex, 1, vertex.size(), vec3(0, 0, 0));
 	box2 = new Rigidbody(vec3(.5, 20, .5), vertex, 1, vertex.size(), vec3(0, 0, 0));
 	physics->addRigidbody(box);
-	physics->addRigidbody(box2);
+	physics->addRigidbody(box2);*/
 
 	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &shader_code);
 
