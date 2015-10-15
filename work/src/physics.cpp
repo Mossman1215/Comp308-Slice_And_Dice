@@ -100,7 +100,8 @@ void Physics::remove(Rigidbody* rb){
   unsigned int count =-1;
   while(count< objects.size()){
     if(objects[count]==rb){
-      //remove rb
+      delete objects[count];
+      objects.erase(objects.begin()+count);
     }
     count++;
   }
