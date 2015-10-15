@@ -197,6 +197,7 @@ void draw() {
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
+	glDisable(GL_BLEND);
 
 	glBegin(GL_QUADS);
 	glVertex3f(10, 0, 10);
@@ -207,13 +208,12 @@ void draw() {
 
 	glBegin(GL_QUADS);
 	glColor4f(0.4, 1, 0.4, 0.5);
-	glVertex3f(10000, -0.01, 10000);
-	glVertex3f(-10000, -0.01, 10000);
-	glVertex3f(-10000, -0.01, -10000);
-	glVertex3f(10000, -0.01, -10000);
+	glVertex3f(10000, -1, 10000);
+	glVertex3f(-10000, -1, 10000);
+	glVertex3f(-10000, -1, -10000);
+	glVertex3f(10000, -1, -10000);
 	glEnd();
 
-	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 
 	glColor4f(1, 0, 0, 1);
