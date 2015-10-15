@@ -176,7 +176,10 @@ void geometry::readOBJ(string filename) {
 	cout << "Normals generation complete!" << endl;
 	cout << m_normals.size() - 1 << " normals" << endl;
 	cout << m_triangles.size() << " faces" << endl;
+	setRigidBody();
+}
 
+void geometry::setRigidBody() {
 	rigidbody = new Rigidbody(vec3(0, 0, 0), m_points, 1, m_points.size(), vec3(0, 0, 0));
 	p->addRigidbody(rigidbody);
 }

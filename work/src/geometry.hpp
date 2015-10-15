@@ -43,6 +43,7 @@ public:
 	geometry(std::string filename, Physics * p);
 	//geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
+	void setRigidBody();
 	void createNormals();
 	//std::vector<triangle> createDisplayListPoly();
 	void createDisplayListPoly();
