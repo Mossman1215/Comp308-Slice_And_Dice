@@ -185,7 +185,41 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
 	vector<geometry> bothGeometrys;
 
-	if (geometry1.getTriangles().size() > 0) {
+	if(geometry1.getTriangles().size() == 0){	//If this geometry is empty, add parent rigidbody to geometry2
+		//vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
+		Rigidbody* parent = g_geometry.getRigidbody();
+		//Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		//p->addRigidbody(parent);
+		geometry2.setRigidbody(parent);
+		bothGeometrys.push_back(geometry2);
+	}
+	else if (geometry2.getTriangles().size() == 0) {	//If this geometry is empty, add parent rigidbody to geometry1
+		//vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
+		Rigidbody* parent = g_geometry.getRigidbody();
+		//Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
+		//p->addRigidbody(parent);
+		geometry1.setRigidbody(parent);
+		bothGeometrys.push_back(geometry1);
+	}
+	else {	//Else add new rigidbody to both as this geometry has been cut
+		cout << "reached 1" << endl;
+		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
+		Rigidbody* parent = g_geometry.getRigidbody();
+		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
+		p->addRigidbody(child);
+		geometry1.setRigidbody(child);
+		bothGeometrys.push_back(geometry1);
+
+		rigidBase = getGeometryCentre(geometry2.getPoints());
+		//Rigidbody* parent = g_geometry.getRigidbody();
+		child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		geometry2.setRigidbody(child);
+		p->addRigidbody(child);
+		bothGeometrys.push_back(geometry2);
+		p->remove(g_geometry.getRigidbody());
+	}
+
+	/*if (geometry1.getTriangles().size() > 0) {
 		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
 		Rigidbody* parent = g_geometry.getRigidbody();
 		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
@@ -195,15 +229,15 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	}
 
 	if (geometry2.getTriangles().size() > 0) {
+		cout << "reached 2" << endl;
 		vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
 		Rigidbody* parent = g_geometry.getRigidbody();
 		Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		geometry2.setRigidbody(child);
 		p->addRigidbody(child);
 		bothGeometrys.push_back(geometry2);
-	}
+	}*/
 	cout << "cutting complete" << endl;
-	p->remove(g_geometry.getRigidbody());
 	return bothGeometrys;
 }
 
@@ -365,6 +399,8 @@ vector<triangle> cut::separateTriangles(vector<triangle> triangles, int directio
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
 
+	translateUnit = translateUnit * 0;
+
 	for (int i = 0; i < newTriangles.size(); i++) {
 		for (vertex &v : newTriangles[i].v) {
 			if (i == 0 && direction != 0) {
@@ -393,6 +429,8 @@ triangle cut::separateTriangle(triangle t, int direction) {
 	double normalMagntde = pow((pow(translateDirection.x, 2) + pow(translateDirection.y, 2) + pow(translateDirection.z, 2)), 0.5);
 	//Translation direction
 	vec3 translateUnit = translateDirection * (1 / normalMagntde);
+
+	translateUnit = translateUnit * 0;
 
 	for (vertex &v : newTriangle.v) {
 		v.p.x = v.p.x + translateUnit.x;
