@@ -9,7 +9,7 @@ void Rigidbody::addForce(vec3 force){
 	this->force += force;
 }
 
-comp308::vec3 Rigidbody::update(float delta){
+comp308::vec3 Rigidbody::update(float delta, bool bounding){
 	//apply forces
 	addForce(vec3(0,-9.81*delta,0));
 	vec3 acceleration = force/mass;
@@ -26,7 +26,7 @@ comp308::vec3 Rigidbody::update(float delta){
 	}
 	force = force*0.99;
 	boundary.position = position;
-	drawBoundingBox(true);
+	drawBoundingBox(bounding);
 	return position;
 }
 void Physics::checkCollisions(float delta){
@@ -109,9 +109,9 @@ void Physics::remove(Rigidbody* rb){
   objects.erase(objects.begin()+count);
   
 }
-void Physics::update(float delta){
+void Physics::update(float delta, bool bounds){
   for(Rigidbody* rb:objects){
-    rb->update(delta);
+    rb->update(delta, bounds);
   }
 }
 void Physics::clear(){

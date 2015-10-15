@@ -69,6 +69,7 @@ Rigidbody* box2;
 Physics* physics;
 bool g_paused = false;
 bool g_slow = false;
+bool g_bounds = false;
 
 // SHADERS CODES.
 GLuint shader_code = 0;
@@ -139,21 +140,21 @@ void draw() {
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
 	
-	physics->update(g_delta);
+	physics->update(g_delta, g_bounds);
 	physics->checkCollisions(g_delta);
 	
 	
 	// Render geometry
-	for (unsigned int i=0;i<g_geometry.size();i++ ) {
-		// Enable Drawing texures
-		glEnable(GL_TEXTURE_2D);
-		// Set the location for binding the texture
-		glActiveTexture(GL_TEXTURE0);
-		// Bind the texture
+	// Enable Drawing texures
+	glEnable(GL_TEXTURE_2D);
+	// Set the location for binding the texture
+	glActiveTexture(GL_TEXTURE0);
+	// Bind the texture
 
-		// Use the shader we made
-		glUseProgram(shader_code);
-		glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
+	// Use the shader we made
+	glUseProgram(shader_code);
+	glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
+	for (unsigned int i=0;i<g_geometry.size();i++ ) {
 
 	    geometry Geometry = g_geometry[i];     
 	    glPushMatrix();	
@@ -164,17 +165,17 @@ void draw() {
 		glColor3f(1.0f, 0.0f, 0.0f);
 		Geometry.render();
 		glPopMatrix();
-		glUseProgram(0);
 	}
+	glUseProgram(0);
 	
 	glPushMatrix();
-	    vec3 position = box->update(g_delta);
+	    vec3 position = box->update(g_delta, g_bounds);
 	    glTranslatef(position.x,position.y,position.z);
 	    glColor3f(1,0,0);
 	    glutSolidCube(1);
 	glPopMatrix();
 	glPushMatrix();
-	    vec3 position2 = box2->update(g_delta);
+	    vec3 position2 = box2->update(g_delta, g_bounds);
 	    glTranslatef(position2.x,position2.y,position2.z);
 	    glColor3f(1,0,0);
 	    glutSolidCube(1);
@@ -290,6 +291,9 @@ void keyboardCallback(unsigned char key, int x, int y) {
 			   break;
 	   case '[':
 		   g_slow = !g_slow;
+		   break;
+	   case 'b':
+		   g_bounds = !g_bounds;
 		   break;
        }
 
