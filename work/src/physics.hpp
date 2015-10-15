@@ -19,7 +19,7 @@ struct TAABB
 class Rigidbody{
 public:
 	comp308::vec3 force;//sum of all forces
-	comp308::vec3 update(float);
+	comp308::vec3 update(float, bool);
 	void rollBack(float);
         TAABB boundary;
 	comp308::vec3 position;
@@ -100,7 +100,7 @@ struct Collision{
 class Physics{
 public:
   void createRigidbody(comp308::vec3 position);
-  void update(float);
+  void update(float, bool);
   std::vector<comp308::vec3> rollBack(float);
   void checkCollisions(float delta);
   void initialiseCollisions();
