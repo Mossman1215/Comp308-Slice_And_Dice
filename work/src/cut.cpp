@@ -546,7 +546,7 @@ vec3 cut::getGeometryCentre(vector<vec3> points) {
 
 	for (vec3 v : points) {
 		centreX = centreX + (v.x + v.x + v.x) / 3;
-		centreY = centreX + (v.y + v.y + v.y) / 3;
+		centreY = centreY + (v.y + v.y + v.y) / 3;
 		centreZ = centreZ + (v.z + v.z + v.z) / 3;
 	}
 
