@@ -6,7 +6,23 @@ uniform float decayRate;
 uniform float radius;
 varying vec3 vWorldPosition;
 varying float vDist;
-varying vec3[31] seeds;
+int seedCount = 300;
+
+vec3 getSeed(int instance, int count){
+	int n = count;
+	float dlong = 2.4;  /* ~2.39996323 */
+	float dz = 2.0/n;
+	float my_long = 0;
+	float z = 1 - dz/2;
+	float r = 0;
+	my_long = (my_long + (dlong * instance));
+	z = z - (dz * instance);
+	r = sqrt(1-z*z);
+	float modifier = 0.5 + ((sin((r * 12.3 + z * 94.8 + my_long * 123.75) * 436.4)) * 0.5);
+	vec3 raw = vec3(cos(my_long)*r, z, sin(my_long)*r) * 0.6 * modifier * radius;
+	vec4 condensed = gl_ModelViewMatrixInverse * vec4(raw, 0);
+	return vec3(condensed.x, condensed.y, condensed.z);
+}
 
 void main()
 {
@@ -14,8 +30,8 @@ void main()
 	float choice = dist/radius;
 	vec4 base = vec4(0, 0, 0, 0);
 	bool seed = false;
-	for (int i = 0; i < seeds.length; i++){
-		if (distance(vWorldPosition, seeds[i]) < 0.1){
+	for (int i = 0; i < seedCount; i++){
+		if (distance(vWorldPosition, getSeed(i, seedCount)) < 0.04){
 			seed = true;
 			base = vec4(0, 0, 0, 1);
 			break;

@@ -29,7 +29,7 @@
       <Values Value0="10" />
     </Uniform1>
     <Uniform2 Type="5" Name="radius" ArraySize="1" Widget="0" Min="0" Max="1" Step="0.001">
-      <Values Value0="0.8" />
+      <Values Value0="2" />
     </Uniform2>
   </UniformVariables>
   <FogParameters FogColorR="0" FogColorG="0" FogColorB="0" FogColorA="1" Density="1" Start="0" End="1" />
