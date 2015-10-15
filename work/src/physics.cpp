@@ -15,25 +15,24 @@ comp308::vec3 Rigidbody::update(float delta, bool bounding){
 	vec3 acceleration = force/mass;
 	//change position
 	if(position.y +boundary.m_vecMin.y + (acceleration.y * delta) > 0){
-	  if(position.x>10){
+	  if(position.x+boundary.m_vecMax.x>10){
 	    acceleration.x = 0;
-	    position.x = 10;
+	    position.x= 10-boundary.m_vecMax.x;
 	  }
-	  if(position.x<-10){
+	  if(position.x+boundary.m_vecMin.x<-10){
 	    acceleration.x = 0;
-	    position.x = -10;
+	    position.x = -10+boundary.m_vecMin.x;
 	  }
-	  if(position.y>10){
-	    acceleration.y = 0;
-	      position.x = 10;
+	  if(position.y+boundary.m_vecMax.y>10){
+	      position.y = 10-boundary.m_vecMax.y;
 	  }
-  	  if(position.z>10){
+  	  if(position.z+boundary.m_vecMax.z>10){
 	    acceleration.z = 0;
-	    position.z = 10;
+	    position.z = 10-boundary.m_vecMax.z;
 	  }
-	  if(position.z<-10){
+	  if(position.z+boundary.m_vecMin.z<-10){
 	    acceleration.z = 0;
-	    position.z = -10;
+	    position.z = -10 + boundary.m_vecMin.z;
 	  }
          
 	  position = position + (acceleration*delta);
