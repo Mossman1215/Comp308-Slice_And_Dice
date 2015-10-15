@@ -47,7 +47,7 @@ bool g_mouseDown = false;
 vec2 g_mousePos;
 float g_yRotation = 0;
 float g_xRotation = 0;
-float g_yPosition = 0;
+float g_yPosition = -2;
 float g_zoomFactor = 4;
 
 // Mouse controlled drawing values
@@ -76,7 +76,9 @@ bool g_bounds = false;
 geometry original;
 
 // SHADERS CODES.
-GLuint shader_code = 0;
+GLuint melon_shader = 0;
+GLuint cake_shader = 0;
+GLuint wood_shader = 0;
 
 // Sets up where and what the light is
 // Called once on start up
@@ -156,8 +158,8 @@ void draw() {
 	// Bind the texture
 
 	// Use the shader we made
-	glUseProgram(shader_code);
-	glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
+	glUseProgram(melon_shader);
+	glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
 
 	    geometry Geometry = g_geometry[i];     
@@ -461,7 +463,10 @@ int main(int argc, char **argv) {
 	physics->addRigidbody(box);
 	physics->addRigidbody(box2);*/
 
-	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &shader_code);
+	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &melon_shader);
+	initShader("../work/res/shaders/cake_shader.vert", "../work/res/shaders/cake_shader.frag", &cake_shader);
+	initShader("../work/res/shaders/wood_shader.vert", "../work/res/shaders/wood_shader.frag", &wood_shader);
+	cout << melon_shader << " " << cake_shader << " " << wood_shader << endl;
 
 	// Register functions for callback
 	glutDisplayFunc(draw);
