@@ -205,8 +205,15 @@ void draw() {
 	glVertex3f(10, 0, -10);
 	glEnd();
 
-	glDisable(GL_BLEND);
+	glBegin(GL_QUADS);
+	glColor4f(0.4, 1, 0.4, 0.5);
+	glVertex3f(10000, -0.01, 10000);
+	glVertex3f(-10000, -0.01, 10000);
+	glVertex3f(-10000, -0.01, -10000);
+	glVertex3f(10000, -0.01, -10000);
+	glEnd();
 
+	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 
 	glColor4f(1, 0, 0, 1);
@@ -216,7 +223,6 @@ void draw() {
 	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glEnd();
-	glDisable(GL_BLEND);
 
 	// Disable flags for cleanup (optional)
 	glDisable(GL_NORMALIZE);
@@ -269,7 +275,10 @@ void reshape(int w, int h) {
 
 void reset() {
 	g_geometry.clear();
-	g_geometry.push_back(original);
+	physics->clear();
+	geometry new_g = original;
+	new_g.setRigidBody();
+	g_geometry.push_back(new_g);
 }
 
 // Keyboard callback
@@ -354,7 +363,6 @@ void mouseCallback(int button, int state, int x, int y) {
 
 				//Create cut upon mouse release.
 				vector<vec3> plane;
-				vec3 pos = physics->getRigidbody(0)->boundary.position;
 				plane.push_back(cut_proj_1);
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
