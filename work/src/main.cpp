@@ -199,10 +199,10 @@ void draw() {
 	glEnd();
 
 	glBegin(GL_QUADS);
-	glVertex3f(100, 0, 100);
-	glVertex3f(-100, 0, 100);
-	glVertex3f(-100, 0, -100);
-	glVertex3f(100, 0, -100);
+	glVertex3f(10, 0, 10);
+	glVertex3f(-10, 0, 10);
+	glVertex3f(-10, 0, -10);
+	glVertex3f(10, 0, -10);
 	glEnd();
 
 	glDisable(GL_BLEND);
