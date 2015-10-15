@@ -167,8 +167,18 @@ void draw() {
 	glEnd();
 	glDisable(GL_BLEND);
 
-	// Disable flags for cleanup (optional)
 	glDisable(GL_DEPTH_TEST);
+
+	glColor4f(1, 0, 0, 1);
+	glBegin(GL_LINES);
+	glVertex3f(cut_draw_1.x, cut_draw_1.y, cut_draw_1.z);
+	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
+	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
+	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
+	glEnd();
+	glDisable(GL_BLEND);
+
+	// Disable flags for cleanup (optional)
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
 
@@ -357,7 +367,7 @@ int main(int argc, char **argv) {
 
 	// Initialise window size and create window
 	glutInitWindowSize(g_winWidth, g_winHeight);
-	g_mainWindow = glutCreateWindow("COMP308 Assignment 2");
+	g_mainWindow = glutCreateWindow("COMP308 Final Project");
 
 
 	// Initilise GLEW

@@ -9,6 +9,7 @@
 
 #include "comp308.hpp"
 #include "geometry.hpp"
+#include "physics.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -314,3 +315,14 @@ vector<vec3> geometry::getPoints() {
 //}
 
 geometry::~geometry(){}
+
+/*
+Mapping geometry to rigidbody:
+
+Each geometry holds a rigidbody, everytime a geometry is cut
+use the rigidbody of the parent geometry to calculate the rigidbody's
+of the child geometry's. Assign the child geometry's the new rigidbody's and pass
+the new geometry's off to g_geometry.
+
+Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
+*/

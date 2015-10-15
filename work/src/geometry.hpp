@@ -30,6 +30,8 @@ private:
 
 	comp308::vec3 m_color;
 
+	//Rigidbody rigidbody;
+
 	// IDs for the display list to render
 	GLuint m_displayListPoly = 0; // DisplayList for Polygon
 public:
