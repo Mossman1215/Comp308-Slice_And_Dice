@@ -145,7 +145,6 @@ void draw() {
 	
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
-		cout << "Using shader!" << endl;
 		// Enable Drawing texures
 		glEnable(GL_TEXTURE_2D);
 		// Set the location for binding the texture
@@ -154,7 +153,7 @@ void draw() {
 
 		// Use the shader we made
 		glUseProgram(shader_code);
-		glUniform1f(glGetUniformLocation(shader_code, "radius"), 2);
+		glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
 
 	    geometry Geometry = g_geometry[i];     
 	    glPushMatrix();	
