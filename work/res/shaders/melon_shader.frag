@@ -19,7 +19,7 @@ void main()
 		float yx = (floor(vWorldPosition.x) + ceil(vWorldPosition.x))/2.0;
 		float yy = (floor(vWorldPosition.y) + ceil(vWorldPosition.y))/2.0;
 		float yz = (floor(vWorldPosition.z) + ceil(vWorldPosition.z))/2.0;
-		if (distance(vWorldPosition, vec3(yx, yy, yz)) < 0.2){
+		if (distance(vWorldPosition, vec3(yx, yy, yz)) < 0.1){
 			seed = true;
 			base = vec4(0.1, 0.05, 0.05, 1);
 		}

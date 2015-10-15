@@ -17,6 +17,7 @@
 #include <iostream>
 #include <string>
 #include "comp308.hpp"
+#include "shaderLoader.hpp"
 #include "geometry.hpp"
 #include "physics.hpp"
 #include "cut.hpp"
@@ -67,6 +68,10 @@ Rigidbody* box;
 Rigidbody* box2;
 Physics* physics;
 bool g_paused = false;
+bool g_slow = false;
+
+// SHADERS CODES.
+GLuint shader_code = 0;
 
 // Sets up where and what the light is
 // Called once on start up
@@ -104,6 +109,10 @@ void setUpCamera() {
 	glRotatef(g_yRotation, 0, 1, 0);
 }
 
+// Build shader program.
+void initShader(string vert, string frag, GLuint* address) {
+	*address = makeShaderProgram(vert, frag);
+}
 
 // Draw function
 //
@@ -112,6 +121,8 @@ void draw() {
 	g_start_time = glutGet(GLUT_ELAPSED_TIME);
 	if(g_paused){
 		g_delta = 0;
+	} if (g_slow) {
+		g_delta *= 0.1;
 	}
 	// Set up camera every frame
 	setUpCamera();
@@ -124,11 +135,9 @@ void draw() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_NORMALIZE);
-	glEnable(GL_COLOR_MATERIAL);
 
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
-	glColor3f(1.0f,0.0f,0.0f);
 	
 	physics->update(g_delta);
 	physics->checkCollisions(g_delta);
@@ -136,6 +145,17 @@ void draw() {
 	
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
+		cout << "Using shader!" << endl;
+		// Enable Drawing texures
+		glEnable(GL_TEXTURE_2D);
+		// Set the location for binding the texture
+		glActiveTexture(GL_TEXTURE0);
+		// Bind the texture
+
+		// Use the shader we made
+		glUseProgram(shader_code);
+		glUniform1f(glGetUniformLocation(shader_code, "radius"), 2);
+
 	    geometry Geometry = g_geometry[i];     
 	    glPushMatrix();	
 	    //get position from rigidbody corresponding to this geometry object
@@ -145,6 +165,7 @@ void draw() {
 		glColor3f(1.0f, 0.0f, 0.0f);
 		Geometry.render();
 		glPopMatrix();
+		glUseProgram(0);
 	}
 	
 	glPushMatrix();
@@ -194,7 +215,7 @@ void draw() {
 	g_delta =(float)((glutGet(GLUT_ELAPSED_TIME) - g_start_time)/1000);
 }
 
-
+// Unprojection system for creating cutting planes.
 vec3 myUnProject(int x, int y, int z) {
 	glLoadIdentity();
 
@@ -267,7 +288,10 @@ void keyboardCallback(unsigned char key, int x, int y) {
               break;
        case 'm':
                box2->addForce(vec3(0,0,1));
-               break;
+			   break;
+	   case '[':
+		   g_slow = !g_slow;
+		   break;
        }
 
 }
@@ -403,6 +427,8 @@ int main(int argc, char **argv) {
 	box2 = new Rigidbody(vec3(.5, 20, .5), vertex, 1, vertex.size(), vec3(0, 0, 0));
 	physics->addRigidbody(box);
 	physics->addRigidbody(box2);
+
+	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &shader_code);
 
 	// Register functions for callback
 	glutDisplayFunc(draw);
