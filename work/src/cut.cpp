@@ -69,14 +69,13 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	vector<vertex> cutVertices;
 	Rigidbody* parent = g_geometry.getRigidbody();
 
+	//Translate plane back to vertex data
 	for (int i = 0; i < 3; i++) {
 		cutPlane[i].x = cutPlane[i].x - parent->position.x;
-		cout << cutPlane[i].x << endl;
 		cutPlane[i].y = cutPlane[i].y - parent->position.y;
-		cout << cutPlane[i].y << endl;
 		cutPlane[i].z = cutPlane[i].z - parent->position.z;
-		cout << cutPlane[i].z << endl;
 	}
+
 	vec3 normal = findNormal();
 	planeD = calculateDisplacement(normal);
 
@@ -207,13 +206,13 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	}
 	else {	//Else add new rigidbody to both as this geometry has been cut
 		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
+		Rigidbody *child = new Rigidbody(rigidBase + parent->position, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 
 		rigidBase = getGeometryCentre(geometry2.getPoints());
-		child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		child = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		geometry2.setRigidbody(child);
 		p->addRigidbody(child);
 		bothGeometrys.push_back(geometry2);
