@@ -133,18 +133,20 @@ void draw() {
 	physics->update(g_delta);
 	physics->checkCollisions(g_delta);
 	
-	glPushMatrix();
+	
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
 	    geometry Geometry = g_geometry[i];     
-		//get position from rigidbody corresponding to this geometry object
+	    glPushMatrix();	
+	    //get position from rigidbody corresponding to this geometry object
 		Rigidbody* rigid = Geometry.getRigidbody();
 		vec3 pos = rigid->position;
 		glTranslatef(pos.x, pos.y, pos.z);
 		glColor3f(1.0f, 0.0f, 0.0f);
 		Geometry.render();
+		glPopMatrix();
 	}
-	glPopMatrix();
+	
 	glPushMatrix();
 	    vec3 position = box->update(g_delta);
 	    glTranslatef(position.x,position.y,position.z);

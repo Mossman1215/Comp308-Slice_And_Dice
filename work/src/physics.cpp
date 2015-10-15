@@ -44,7 +44,7 @@ void Physics::checkCollisions(float delta){
 	     c.a = rb1;
 	     c.b = rb2;
 	     collisions.push_back(c);
-	     cout << "collision detected rb1.pos:" << rb1->boundary.position << " rb2.pos "<< rb2->boundary.position<< endl;
+	     
            }
       }  
     }
@@ -54,13 +54,12 @@ void Physics::checkCollisions(float delta){
 	Collision c =  collisions[k];
 	vec3 forceA;
 	forceA = c.a->position - c.b->position;
-	cout <<"forceA"<<forceA<< endl;
+	
 	float r = length(forceA);
 	c.a->addForce(forceA/(r*r));
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
 	c.b->addForce(forceB/(r*r));
-	cout <<"forceB"<<forceB<< endl;
 	
   }
   collisions.clear();
@@ -95,14 +94,19 @@ Rigidbody* Physics::getRigidbody(int position){
   return objects[position];
 }
 void Physics::remove(Rigidbody* rb){
-  unsigned int count =-1;
+  unsigned int count =0;
   while(count< objects.size()){
-    if(objects[count]==rb){
-      delete objects[count];
-      objects.erase(objects.begin()+count);
+    Rigidbody* array =objects[count];
+    cout <<"rb:"<< rb <<endl;
+    cout <<"objects[count] "<<objects[count]<<endl;
+    if(array==rb){
+    cout <<"equality!!!"<< rb <<endl;
+      break;
     }
     count++;
   }
+  delete rb;
+  objects.erase(objects.begin()+count);
   
 }
 void Physics::update(float delta){

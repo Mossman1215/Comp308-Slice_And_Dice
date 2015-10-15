@@ -203,7 +203,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		bothGeometrys.push_back(geometry2);
 	}
 	cout << "cutting complete" << endl;
-	//p->remove(g_geometry.getRigidbody());
+	p->remove(g_geometry.getRigidbody());
 	return bothGeometrys;
 }
 
