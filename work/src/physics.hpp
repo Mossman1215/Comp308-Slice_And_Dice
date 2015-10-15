@@ -1,3 +1,4 @@
+# pragma once
 /*
  * physics module for comp308 final project
  * 2015 Tomas Cantwell cantwetoma@myvuw.ac.nz

@@ -129,15 +129,19 @@ void draw() {
 	// Set the current material (for all objects) to red
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE); 
 	glColor3f(1.0f,0.0f,0.0f);
+	
+	physics->update(g_delta);
+	physics->checkCollisions(g_delta);
+	
 	glPushMatrix();
-	Rigidbody* rigid = physics->getRigidbody(0);
-	vec3 pos = rigid->update(g_delta);
-	glTranslatef(pos.x,pos.y,pos.z);
 	// Render geometry
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
-	        geometry Geometry = g_geometry[i];     
+	    geometry Geometry = g_geometry[i];     
 		//get position from rigidbody corresponding to this geometry object
-		glColor3f(1.0f,0.0f,0.0f);
+		Rigidbody* rigid = Geometry.getRigidbody();
+		vec3 pos = rigid->position;
+		glTranslatef(pos.x, pos.y, pos.z);
+		glColor3f(1.0f, 0.0f, 0.0f);
 		Geometry.render();
 	}
 	glPopMatrix();
@@ -154,8 +158,6 @@ void draw() {
 	    glutSolidCube(1);
 	glPopMatrix();
 	glDisable(GL_LIGHTING);
-	physics->update(g_delta);
-	physics->checkCollisions(g_delta);
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -382,6 +384,23 @@ int main(int argc, char **argv) {
 	cout << "Using OpenGL " << glGetString(GL_VERSION) << endl;
 	cout << "Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 
+	//Create our physics and geometry
+	physics = new Physics();
+	// Finally create our geometry
+	geometry g_sphere = geometry("../work/res/assets/sphere.obj", physics);
+	vector<vec3> object_pts = g_sphere.getPoints();
+	g_geometry.push_back(g_sphere);
+
+	g_cut = new cut();
+	vector<vec3> vertex;
+	vertex.push_back(vec3(-.5, .5, -.5));
+	vertex.push_back(vec3(-.5, -.5, -.5));
+	vertex.push_back(vec3(.5, .5, .5));
+	vertex.push_back(vec3(.5, -.5, .5));
+	box = new Rigidbody(vec3(0, 10, 0), vertex, 1, vertex.size(), vec3(0, 0, 0));
+	box2 = new Rigidbody(vec3(.5, 20, .5), vertex, 1, vertex.size(), vec3(0, 0, 0));
+	physics->addRigidbody(box);
+	physics->addRigidbody(box2);
 
 	// Register functions for callback
 	glutDisplayFunc(draw);
@@ -399,24 +418,6 @@ int main(int argc, char **argv) {
 
 	// Create a light on the camera
 	initLight();
-	physics = new Physics();
-	// Finally create our geometry
-	geometry g_sphere = geometry("../work/res/assets/sphere.obj");
-	vector<vec3> object_pts = g_sphere.getPoints();
-	Rigidbody rigid = Rigidbody(vec3(0,0,0),object_pts,1,object_pts.size(),vec3(0,0,0));
-	g_geometry.push_back(g_sphere);
-	physics->addRigidbody(&rigid);
-	
-	g_cut = new cut();
-	vector<vec3> vertex;
-	vertex.push_back(vec3(-.5,.5,-.5));
-	vertex.push_back(vec3(-.5,-.5,-.5));
-	vertex.push_back(vec3(.5,.5,.5));
-	vertex.push_back(vec3(.5,-.5,.5));
-	box = new Rigidbody(vec3(0,10,0),vertex,1,vertex.size(),vec3(0,0,0));
-	box2 = new Rigidbody(vec3(.5,20,.5),vertex,1,vertex.size(),vec3(0,0,0));
-	physics->addRigidbody(box);
-	physics->addRigidbody(box2);
 	// Loop required by OpenGL
 	// This will not return until we tell OpenGL to finish
 	glutMainLoop();

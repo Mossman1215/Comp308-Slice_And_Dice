@@ -27,6 +27,7 @@ private:
 	float getLineDisplacement(comp308::vec3 position, comp308::vec3 direction);
 	comp308::vec3 getCentroid(triangle t);
 	vertex getCentre(std::vector<vertex> polygon);
+	comp308::vec3 getGeometryCentre(std::vector<comp308::vec3> points);
 public:
 	cut();
 	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry, Physics *p);

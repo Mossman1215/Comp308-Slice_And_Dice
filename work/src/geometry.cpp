@@ -24,7 +24,8 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-geometry::geometry(string filename){
+geometry::geometry(string filename, Physics *physics){
+	p = physics;
 	m_color = normalize(random_vec3());
 
 	readOBJ(filename);
@@ -175,6 +176,9 @@ void geometry::readOBJ(string filename) {
 	cout << "Normals generation complete!" << endl;
 	cout << m_normals.size() - 1 << " normals" << endl;
 	cout << m_triangles.size() << " faces" << endl;
+
+	rigidbody = new Rigidbody(vec3(0, 0, 0), m_points, 1, m_points.size(), vec3(0, 0, 0));
+	p->addRigidbody(rigidbody);
 }
 
 //-------------------------------------------------------------
@@ -224,8 +228,6 @@ void geometry::createNormals() {
 		}
 	}
 	cout << "Smoothing complete." << endl;
-
-	rigidbody = new Rigidbody(vec3(0, 0, 0), m_points, 1, m_points.size(), vec3(0, 0, 0));
 
 }
 

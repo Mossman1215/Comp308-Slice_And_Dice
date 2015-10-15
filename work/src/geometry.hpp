@@ -34,11 +34,13 @@ private:
 	//The current rigidbody assigned to this geometry
 	Rigidbody *rigidbody = nullptr;
 
+	Physics *p;
+
 	// IDs for the display list to render
 	GLuint m_displayListPoly = 0; // DisplayList for Polygon
 public:
 	geometry();
-	geometry(std::string filename);
+	geometry(std::string filename, Physics * p);
 	//geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
 	void createNormals();

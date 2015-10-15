@@ -185,23 +185,25 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
 	vector<geometry> bothGeometrys;
 
-	if (geometry1.getTriangles().size() > 0) {;
+	if (geometry1.getTriangles().size() > 0) {
+		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
 		Rigidbody* parent = g_geometry.getRigidbody();
-		Rigidbody *child = new Rigidbody(parent->position, geometry1.getPoints(), 1, geometry1.getPoints.size(), parent->force);
+		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 	}
 
 	if (geometry2.getTriangles().size() > 0) {
+		vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
 		Rigidbody* parent = g_geometry.getRigidbody();
-		Rigidbody *child = new Rigidbody(parent->position, geometry1.getPoints(), 1, geometry1.getPoints.size(), parent->force);
+		Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		geometry2.setRigidbody(child);
 		p->addRigidbody(child);
 		bothGeometrys.push_back(geometry2);
 	}
-
-	p->remove(g_geometry.getRigidbody());
+	cout << "cutting complete" << endl;
+	//p->remove(g_geometry.getRigidbody());
 	return bothGeometrys;
 }
 
@@ -512,4 +514,20 @@ vertex cut::getCentre(vector<vertex> polygon) {
 	centreVertex.p = centreP;
 
 	return centreVertex;
+}
+
+vec3 cut::getGeometryCentre(vector<vec3> points) {
+	GLfloat centreX = 0;
+	GLfloat centreY = 0;
+	GLfloat centreZ = 0;
+
+	for (vec3 v : points) {
+		centreX = centreX + (v.x + v.x + v.x) / 3;
+		centreY = centreX + (v.y + v.y + v.y) / 3;
+		centreZ = centreZ + (v.z + v.z + v.z) / 3;
+	}
+
+	vec3 centroid(centreX / points.size(), centreY / points.size(), centreZ / points.size());
+
+	return centroid;
 }
