@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "comp308.hpp"
+#include "physics.hpp"
 
 struct vertex {
 	comp308::vec3 p; 
@@ -29,21 +30,27 @@ private:
 	std::vector<triangle> m_triangles;		// Triangle/Face list
 
 	comp308::vec3 m_color;
+	
+	//The current rigidbody assigned to this geometry
+	Rigidbody *rigidbody = nullptr;
+
+	Physics *p;
 
 	// IDs for the display list to render
 	GLuint m_displayListPoly = 0; // DisplayList for Polygon
 public:
 	geometry();
-	geometry(std::string filename);
+	geometry(std::string filename, Physics * p);
 	//geometry(std::vector<std::vector<comp308::vec3>> triangle);
 	void readOBJ(std::string filename);
 	void createNormals();
 	//std::vector<triangle> createDisplayListPoly();
 	void createDisplayListPoly();
-	void draw();
 	void render();
 	std::vector<triangle> getTriangles();
 	void addToTriangles(triangle triangle);
+	Rigidbody * getRigidbody();
+	void setRigidbody(Rigidbody * r);
 	virtual ~geometry();
         std::vector<comp308::vec3> getPoints();
 };

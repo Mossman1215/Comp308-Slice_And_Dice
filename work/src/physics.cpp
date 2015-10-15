@@ -55,12 +55,10 @@ void Physics::checkCollisions(float delta){
 	vec3 forceA;
 	forceA = c.a->position - c.b->position;
 	cout <<"forceA"<<forceA<< endl;
-	forceA = normalize(forceA);
 	float r = length(forceA);
 	c.a->addForce(forceA/(r*r));
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
-	forceB = normalize(forceB);
 	c.b->addForce(forceB/(r*r));
 	cout <<"forceB"<<forceB<< endl;
 	
@@ -96,6 +94,22 @@ void Physics::addRigidbody(Rigidbody* r){
 Rigidbody* Physics::getRigidbody(int position){
   return objects[position];
 }
+void Physics::remove(Rigidbody* rb){
+  unsigned int count =-1;
+  while(count< objects.size()){
+    if(objects[count]==rb){
+      delete objects[count];
+      objects.erase(objects.begin()+count);
+    }
+    count++;
+  }
+  
+}
+void Physics::update(float delta){
+  for(Rigidbody* rb:objects){
+    rb->update(delta);
+  }
+}
 void Physics::clear(){
   objects.clear();
 }
@@ -103,7 +117,7 @@ void Rigidbody::drawBoundingBox(bool visible){
   glPushMatrix();
   glTranslatef(boundary.position.x,boundary.position.y,boundary.position.z);
   if(visible){
-	glLineWidth(1);
+	glLineWidth(2);
 	glColor3f(0,1,0);
 	 glBegin(GL_LINE_LOOP);
 	 //min z to max z

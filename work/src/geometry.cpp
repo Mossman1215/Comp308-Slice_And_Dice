@@ -9,6 +9,7 @@
 
 #include "comp308.hpp"
 #include "geometry.hpp"
+#include "physics.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -23,7 +24,8 @@ geometry::geometry() {
 	m_color = normalize(random_vec3());
 }
 
-geometry::geometry(string filename){
+geometry::geometry(string filename, Physics *physics){
+	p = physics;
 	m_color = normalize(random_vec3());
 
 	readOBJ(filename);
@@ -174,6 +176,9 @@ void geometry::readOBJ(string filename) {
 	cout << "Normals generation complete!" << endl;
 	cout << m_normals.size() - 1 << " normals" << endl;
 	cout << m_triangles.size() << " faces" << endl;
+
+	rigidbody = new Rigidbody(vec3(0, 0, 0), m_points, 1, m_points.size(), vec3(0, 0, 0));
+	p->addRigidbody(rigidbody);
 }
 
 //-------------------------------------------------------------
@@ -291,26 +296,33 @@ void geometry::addToTriangles(triangle triangle) {
 	m_triangles.push_back(triangle);
 }
 
-//vector<vec3> geometry::getNormals() {
-//	return m_normals;
-//}
-//
-//vector<vec2> geometry::getTextures() {
-//	return m_uvs;
-//}
-//
+Rigidbody* geometry::getRigidbody() {
+	return rigidbody;
+}
+
+void geometry::setRigidbody(Rigidbody* r) {
+	rigidbody = r;
+}
+
 vector<vec3> geometry::getPoints() {
+	m_points.clear();
+	for (triangle t : m_triangles) {
+		m_points.push_back(t.v[0].p);
+		m_points.push_back(t.v[1].p);
+		m_points.push_back(t.v[2].p);
+	}
 	return m_points;
 }
-//
-//void geometry::setNormals(vector<vec3>) {
-//
-//}
-//void geometry::setTextures(vector<vec2>) {
-//
-//}
-//void geometry::setPoints(vector<vec3>) {
-//
-//}
 
 geometry::~geometry(){}
+
+/*
+Mapping geometry to rigidbody:
+
+Each geometry holds a rigidbody, everytime a geometry is cut
+use the rigidbody of the parent geometry to calculate the rigidbody's
+of the child geometry's. Assign the child geometry's the new rigidbody's and pass
+the new geometry's off to g_geometry.
+
+Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
+*/

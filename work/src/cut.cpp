@@ -8,6 +8,7 @@
 #include "comp308.hpp"
 #include "cut.hpp"
 #include "geometry.hpp"
+#include "physics.hpp"
 
 using namespace std;
 using namespace comp308;
@@ -16,6 +17,16 @@ vector<vec3> cutPlane;
 vec3 normal;
 float planeD;
 
+/*
+Mapping geometry to rigidbody:
+
+Each geometry holds a rigidbody, everytime a geometry is cut
+use the rigidbody of the parent geometry to calculate the rigidbody's
+of the child geometry's. Assign the child geometry's the new rigidbody's and pass
+the new geometry's off to g_geometry.
+
+Rigidbody rigid = Rigidbody(vec3(0,0,0),g_sphere.getPoints(),1);
+*/
 
 cut::cut() {}
 
@@ -23,7 +34,7 @@ cut::cut() {}
 For every geometry currently in the world, cut that geometry if it intersects with the plane
 and return new geometry resulting from the cut.
 */
-vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) {
+vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys, Physics *p) {
 	cutPlane = plane;
 	vec3 normal = findNormal();
 	planeD = calculateDisplacement(normal);
@@ -31,7 +42,7 @@ vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys) 
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
 		vector<geometry> newGeometrys;
-		newGeometrys = cutGeometry(g_geometry);
+		newGeometrys = cutGeometry(g_geometry, p);
 		for (geometry newGeometry : newGeometrys) {
 			allGeometry.push_back(newGeometry);
 			triCount += newGeometry.getTriangles().size();
@@ -50,7 +61,7 @@ For the given geometry and for every triangle within that geometry, if it inters
 add the resulting triangles to either one of two geometrys (left of plane or right of plane).
 Return those geometrys.
 */
-vector<geometry> cut::cutGeometry(geometry g_geometry) {
+vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	geometry geometry1 = geometry();
 	geometry geometry2 = geometry();
 	int intersects = 0;
@@ -174,14 +185,25 @@ vector<geometry> cut::cutGeometry(geometry g_geometry) {
 	//If plane didn't intersect this geometry then one of the geometry's will be empty. So discard it.
 	vector<geometry> bothGeometrys;
 
-	if (geometry1.getTriangles().size() > 0) {;
+	if (geometry1.getTriangles().size() > 0) {
+		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
+		Rigidbody* parent = g_geometry.getRigidbody();
+		Rigidbody *child = new Rigidbody(rigidBase, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
+		p->addRigidbody(child);
+		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 	}
 
 	if (geometry2.getTriangles().size() > 0) {
+		vec3 rigidBase = getGeometryCentre(geometry2.getPoints());
+		Rigidbody* parent = g_geometry.getRigidbody();
+		Rigidbody *child = new Rigidbody(rigidBase, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		geometry2.setRigidbody(child);
+		p->addRigidbody(child);
 		bothGeometrys.push_back(geometry2);
 	}
-
+	cout << "cutting complete" << endl;
+	//p->remove(g_geometry.getRigidbody());
 	return bothGeometrys;
 }
 
@@ -492,4 +514,20 @@ vertex cut::getCentre(vector<vertex> polygon) {
 	centreVertex.p = centreP;
 
 	return centreVertex;
+}
+
+vec3 cut::getGeometryCentre(vector<vec3> points) {
+	GLfloat centreX = 0;
+	GLfloat centreY = 0;
+	GLfloat centreZ = 0;
+
+	for (vec3 v : points) {
+		centreX = centreX + (v.x + v.x + v.x) / 3;
+		centreY = centreX + (v.y + v.y + v.y) / 3;
+		centreZ = centreZ + (v.z + v.z + v.z) / 3;
+	}
+
+	vec3 centroid(centreX / points.size(), centreY / points.size(), centreZ / points.size());
+
+	return centroid;
 }

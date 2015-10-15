@@ -1,3 +1,4 @@
+# pragma once
 /*
  * physics module for comp308 final project
  * 2015 Tomas Cantwell cantwetoma@myvuw.ac.nz
@@ -17,11 +18,12 @@ struct TAABB
 
 class Rigidbody{
 public:
+	comp308::vec3 force;//sum of all forces
 	comp308::vec3 update(float);
 	void rollBack(float);
         TAABB boundary;
 	comp308::vec3 position;
-  Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass){
+  Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass,unsigned int numPoints,comp308::vec3 parentForce){
 		/*set inertia tensor based on mesh data*/
 		position = base;
 		this->mass = mass;
@@ -32,6 +34,8 @@ public:
 		  //find min values for x,y,z
 		findMin();
 		boundary.position = base;
+		comp308::vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
+		addForce(momentum);
 	};
 	void addForce(comp308::vec3 force);
 	void addTorque(comp308::vec4 quat);
@@ -42,7 +46,6 @@ private:
 	comp308::vec4 rotation;
 	comp308::vec3 linearVelocity;//current velocity
 	comp308::vec3 angularVelocity;//current angular velocity
-	comp308::vec3 force;//sum of all forces
 	comp308::vec3 torque;//sum of all torques
 	std::vector<comp308::vec3> mesh;
   void drawBoundingBox(bool);
@@ -105,6 +108,7 @@ public:
   void addRigidbody(Rigidbody*);
   Rigidbody* getRigidbody(int position);
   void clear();
+  void remove(Rigidbody*);
 private:
 	float currentTime;
 	std::vector<Rigidbody*> objects;
