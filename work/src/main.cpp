@@ -48,7 +48,7 @@ vec2 g_mousePos;
 float g_yRotation = 0;
 float g_xRotation = 0;
 float g_yPosition = 0;
-float g_zoomFactor = 1.0;
+float g_zoomFactor = 4;
 
 // Mouse controlled drawing values
 //
@@ -135,7 +135,7 @@ void draw() {
 	setUpCamera();
 
 	// Black background
-	glClearColor(0.0f,0.0f,0.0f,1.0f);
+	glClearColor(0.2f,0.2f,0.9f,1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Enable flags for normal rendering
@@ -184,11 +184,15 @@ void draw() {
 	glVertex3f(cut_proj_1.x, cut_proj_1.y, cut_proj_1.z);
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
-	glVertex3f(100, 0, 100);
-	glVertex3f(-100, 0, 100);
-	glVertex3f(-100, 0, -100);
-	glVertex3f(100, 0, -100);
 	glEnd();
+
+	glBegin(GL_QUADS);
+	glVertex3f(10, 0, 10);
+	glVertex3f(-10, 0, 10);
+	glVertex3f(-10, 0, -10);
+	glVertex3f(10, 0, -10);
+	glEnd();
+
 	glDisable(GL_BLEND);
 
 	glDisable(GL_DEPTH_TEST);
