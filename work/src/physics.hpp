@@ -21,7 +21,7 @@ public:
 	void rollBack(float);
         TAABB boundary;
 	comp308::vec3 position;
-  Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass){
+  Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass,unsigned int numPoints,comp308::vec3 parentForce){
 		/*set inertia tensor based on mesh data*/
 		position = base;
 		this->mass = mass;
@@ -32,6 +32,8 @@ public:
 		  //find min values for x,y,z
 		findMin();
 		boundary.position = base;
+		vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
+		addForce(momentum);
 	};
 	void addForce(comp308::vec3 force);
 	void addTorque(comp308::vec4 quat);
@@ -105,6 +107,7 @@ public:
   void addRigidbody(Rigidbody*);
   Rigidbody* getRigidbody(int position);
   void clear();
+  void remove(Rigidbody*);
 private:
 	float currentTime;
 	std::vector<Rigidbody*> objects;

@@ -96,6 +96,21 @@ void Physics::addRigidbody(Rigidbody* r){
 Rigidbody* Physics::getRigidbody(int position){
   return objects[position];
 }
+void Physics::remove(Rigidbody* rb){
+  unsigned int count =-1;
+  while(count< objects.size()){
+    if(objects[count]==rb){
+      objects.erase(count);
+    }
+    count++;
+  }
+  
+}
+void Physics::update(float delta){
+  for(Rigidbody* rb:objects){
+    rb->update(delta);
+  }
+}
 void Physics::clear(){
   objects.clear();
 }

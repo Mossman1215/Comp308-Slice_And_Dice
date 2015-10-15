@@ -154,6 +154,7 @@ void draw() {
 	    glutSolidCube(1);
 	glPopMatrix();
 	glDisable(GL_LIGHTING);
+	physics->update(g_delta);
 	physics->checkCollisions(g_delta);
 	glEnable(GL_BLEND);
 
