@@ -14,36 +14,36 @@ comp308::vec3 Rigidbody::update(float delta, bool bounding){
 	this->addForce(vec3(0,-9.81*delta,0));
 	vec3 acceleration = force/mass;
 	//change position
-	if(position.y +boundary.m_vecMin.y + (acceleration.y * delta) > 0){
-	  if(position.x+boundary.m_vecMax.x>10){
-	    acceleration.x = 0;
-	    position.x= 10-boundary.m_vecMax.x;
-	  }
-	  if(position.x+boundary.m_vecMin.x<-10){
-	    acceleration.x = 0;
-	    position.x = -10+boundary.m_vecMin.x;
-	  }
-	  if(position.y+boundary.m_vecMax.y>10){
-	      position.y = 10-boundary.m_vecMax.y;
-	  }
-  	  if(position.z+boundary.m_vecMax.z>10){
-	    acceleration.z = 0;
-	    position.z = 10-boundary.m_vecMax.z;
-	  }
-	  if(position.z+boundary.m_vecMin.z<-10){
-	    acceleration.z = 0;
-	    position.z = -10 + boundary.m_vecMin.z;
-	  }
-         
-	  position = position + (acceleration*delta);
-	  
-	}else {
-		this->addForce(vec3(0,-force.y,0));
+	if(position.y +boundary.m_vecMin.y + (acceleration.y * delta) < 0){
+	 	this->addForce(vec3(0,-force.y,0));
 		position = position + ((force/mass)*delta);
 		position.y = -boundary.m_vecMin.y;
 		force.x = force.x*0.9;
 		force.z = force.z*0.9;
 	}
+	  if(position.x+boundary.m_vecMax.x>10){
+	    this->addForce(vec3(-force.x,0,0));
+	    position.x= 10-boundary.m_vecMax.x;
+	  }
+	  if(position.x-boundary.m_vecMin.x<-10){
+	    this->addForce(vec3(-force.x,0,0));
+	    position.x = -10+boundary.m_vecMin.x;
+	  }
+	  if(position.y+boundary.m_vecMax.y>10){
+	    this->addForce(vec3(0,-10,0));
+	      position.y = 10-boundary.m_vecMax.y;
+	  }
+  	  if(position.z+boundary.m_vecMax.z>10){
+	    this->addForce(vec3(0,0,-force.z));
+	    position.z = 10-boundary.m_vecMax.z;
+	  }
+	  if(position.z-boundary.m_vecMin.z<-10){
+	    this->addForce(vec3(0,0,-force.z));
+	    position.z = -10 + boundary.m_vecMin.z;
+	  }
+         
+	  position = position + (acceleration*delta);
+	  
 	force = force*0.99;
 	boundary.position = position;
 	drawBoundingBox(bounding);

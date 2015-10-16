@@ -205,15 +205,16 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		bothGeometrys.push_back(geometry1);
 	}
 	else {	//Else add new rigidbody to both as this geometry has been cut
+	  cout << "parent position " << parent->position<<endl;
 		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		Rigidbody *child = new Rigidbody(rigidBase + parent->position, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
+		Rigidbody *child = new Rigidbody(rigidBase+parent->position, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
-		cout  << "child1 :"<< child->position <<endl;
+		cout  << "child1 base:"<< rigidBase << " pos:"<< child->position <<endl;
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 
 		rigidBase = getGeometryCentre(geometry2.getPoints());
-		child = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		child = new Rigidbody(rigidBase+parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		geometry2.setRigidbody(child);
 		p->addRigidbody(child);
 		cout <<"child2 "<< child->position << endl;
