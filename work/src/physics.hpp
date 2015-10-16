@@ -34,7 +34,7 @@ public:
 		findMin();
 		position = base;
 		boundary.position = base;
-		comp308::vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
+		comp308::vec3 momentum = parentForce*5;
 		addForce(momentum);
 	};
 	void addForce(comp308::vec3 force);
