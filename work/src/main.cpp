@@ -217,6 +217,7 @@ void draw() {
 	glEnd();
 
 	glBegin(GL_QUADS);
+	glColor4f(1, 1, 1, 1);
 	glVertex3f(10, 0, 10);
 	glVertex3f(-10, 0, 10);
 	glVertex3f(-10, 0, -10);
