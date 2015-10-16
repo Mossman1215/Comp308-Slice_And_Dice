@@ -73,7 +73,9 @@ bool g_paused = false;
 bool g_slow = false;
 bool g_bounds = false;
 
-geometry original;
+geometry m_melon;
+geometry m_log;
+geometry m_cake;
 
 // SHADERS CODES.
 GLuint melon_shader = 0;
@@ -160,7 +162,7 @@ void draw() {
 	// Use the shader we made
 	glUseProgram(melon_shader);
 	glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
-	for (unsigned int i=0;i<g_geometry.size();i++ ) {
+	for (unsigned int i=0;i<g_geometry.size(); i++) {
 
 	    geometry Geometry = g_geometry[i];     
 	    glPushMatrix();	
@@ -278,7 +280,7 @@ void reshape(int w, int h) {
 void reset() {
 	g_geometry.clear();
 	physics->clear();
-	geometry new_g = original;
+	geometry new_g = m_log;
 	new_g.setRigidBody();
 	g_geometry.push_back(new_g);
 }
@@ -448,9 +450,13 @@ int main(int argc, char **argv) {
 	//Create our physics and geometry
 	physics = new Physics();
 	// Finally create our geometry
-	geometry g_sphere = geometry("../work/res/assets/sphere.obj", physics);
-	original = g_sphere;
-	g_geometry.push_back(g_sphere);
+	m_melon = geometry("../work/res/assets/sphere.obj", physics);
+	m_log = geometry("../work/res/assets/TestLog.obj", physics);
+	m_cake = geometry("../work/res/assets/TestCake.obj", physics);
+	physics->clear();
+	geometry starter = m_melon;
+	starter.setRigidBody();
+	g_geometry.push_back(starter);
 
 	g_cut = new cut();
 	vector<vec3> vertex;
