@@ -45,6 +45,8 @@ float g_zfar = 1000;
 //
 bool g_mouseDown = false;
 vec2 g_mousePos;
+bool g_drawMoved;
+bool g_samurai;
 float g_yRotation = 0;
 float g_xRotation = 0;
 float g_yPosition = -2;
@@ -130,7 +132,7 @@ void initShader(string vert, string frag, GLuint* address) {
 void draw() {
 	g_delta = (glutGet(GLUT_ELAPSED_TIME) - g_start_time) /1000.0f;
 	g_start_time = glutGet(GLUT_ELAPSED_TIME);
-	if(g_paused){
+	if(g_paused || g_samurai){
 		g_delta = 0;
 	} if (g_slow) {
 		g_delta *= 0.1;
@@ -254,7 +256,7 @@ void draw() {
 	glDisable(GL_BLEND);
 	// Feedback messages.
 
-	glColor4f(1, 1, 1, 1);
+	glColor4f(0, 0, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
@@ -264,6 +266,9 @@ void draw() {
 	case 0: mytext << "Melon."; break;
 	case 1: mytext << "Cake."; break;
 	case 2: mytext << "Log."; break;
+	}
+	if (g_samurai) {
+		mytext << " SAMURAI MODE ACTIVE!!!";
 	}
 	string text = mytext.str();
 	glRasterPos2i(10, 10);  // move in 10 pixels from the left and bottom edges
@@ -379,6 +384,9 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	   case 'b':
 		   g_bounds = !g_bounds;
 		   break;
+	   case 'x':
+		   g_samurai = !g_samurai;
+		   break;
 	   case 'r':
 		   reset();
 		   break;
@@ -421,8 +429,9 @@ void mouseCallback(int button, int state, int x, int y) {
 				cut_proj_1 = myUnProject(x, y, 1);
 				cut_draw_2 = myUnProject(x, y, 0);
 				cut_proj_2 = myUnProject(x, y, 1);
+				g_drawMoved = false;
 			}
-			if (!g_drawMouse) {
+			if (!g_drawMouse && g_drawMoved) {
 				cut_draw_2 = myUnProject(x, y, 0);
 				cut_proj_2 = myUnProject(x, y, 1);
 
@@ -432,7 +441,7 @@ void mouseCallback(int button, int state, int x, int y) {
 				plane.push_back(cut_proj_2);
 				plane.push_back(cut_draw_2);
 				vector<geometry> allGeometry;
-				allGeometry = g_cut->createCut(plane, g_geometry, physics);
+				allGeometry = g_cut->createCut(plane, g_geometry, physics, g_samurai);
 				g_geometry = allGeometry;
 				//for all geometry objects
 				//preserve momentum
@@ -473,6 +482,7 @@ void mouseMotionCallback(int x, int y) {
 	if (g_drawMouse) {
 		cut_draw_2 = myUnProject(x, y, 0);
 		cut_proj_2 = myUnProject(x, y, 1);
+		g_drawMoved = true;
 	}
 	if (g_mouseDown) {
 		vec2 dif = vec2(x, y) - g_mousePos;
