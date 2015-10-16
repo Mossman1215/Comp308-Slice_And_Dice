@@ -209,7 +209,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	else {	//Else add new rigidbody to both as this geometry has been cut
 		vec3 rigidBase;
 		if (samurai) {
-			rigidBase = getGeometryCentre(geometry1.getPoints()) / 200;
+			rigidBase = getGeometryCentre(geometry1.getPoints()) / 100;
 		}
 		else {
 			rigidBase = getGeometryCentre(geometry1.getPoints());
@@ -220,7 +220,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		bothGeometrys.push_back(geometry1);
 
 		if (samurai) {
-			rigidBase = getGeometryCentre(geometry2.getPoints()) / 200;
+			rigidBase = getGeometryCentre(geometry2.getPoints()) / 100;
 		}
 		else {
 			rigidBase = getGeometryCentre(geometry2.getPoints());
