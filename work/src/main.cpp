@@ -251,7 +251,7 @@ void draw() {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluOrtho2D(0, 1280, 0, 1024);
+	gluOrtho2D(0, g_winHeight, 0, g_winWidth);
 
 	glDisable(GL_BLEND);
 	// Feedback messages.
@@ -267,10 +267,21 @@ void draw() {
 	case 1: mytext << "Cake."; break;
 	case 2: mytext << "Log."; break;
 	}
+	if (g_slow) {
+		mytext << " SLOWMO.";
+	}
 	if (g_samurai) {
-		mytext << " SAMURAI MODE ACTIVE!!!";
+		mytext << " SAMURAI MODE ACTIVE!!! Press x to resolve.";
+	}
+	else if (g_paused) {
+		mytext << " PAUSED. Press space to resume.";
 	}
 	string text = mytext.str();
+	glRasterPos2i(10, 30);  // move in 10 pixels from the left and bottom edges
+	for (int i = 0; i < text.size(); i++) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
+	}
+	text = "Controls: 1, 2, 3 to switch reset models, r to reset, b to show bounds, [ to enter slowmo, x for samurai mode";
 	glRasterPos2i(10, 10);  // move in 10 pixels from the left and bottom edges
 	for (int i = 0; i < text.size(); i++) {
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
@@ -356,11 +367,12 @@ void keyboardCallback(unsigned char key, int x, int y) {
 		g_yPosition -= 0.03;
 	}
 	cout << key << " " << g_yRotation << endl;
-	if(key ==' '){
-		g_paused= !g_paused;
-	}
      switch(key){
-     case 'j':
+		 case ' ':
+			 g_paused = !g_paused;
+			 g_samurai = false;
+			 break;
+	   case 'j':
              box2->addForce(vec3(-1,0,0));
                break;
        case 'l':
@@ -386,6 +398,7 @@ void keyboardCallback(unsigned char key, int x, int y) {
 		   break;
 	   case 'x':
 		   g_samurai = !g_samurai;
+		   g_paused = false;
 		   break;
 	   case 'r':
 		   reset();
