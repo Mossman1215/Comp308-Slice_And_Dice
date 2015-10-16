@@ -25,16 +25,16 @@ public:
 	comp308::vec3 position;
   Rigidbody(comp308::vec3 base,std::vector<comp308::vec3> mesh,double mass,unsigned int numPoints,comp308::vec3 parentForce){
 		/*set inertia tensor based on mesh data*/
-		position = base;
-		this->mass = mass;
+                this->mass = mass;
 		this->mesh = mesh;
 		//calculate TAABB parts
 		  //find max values for x,y,z
 		findMax();
 		  //find min values for x,y,z
 		findMin();
+		position = base;
 		boundary.position = base;
-		comp308::vec3 momentum = parentForce*(numPoints+0.0/mesh.size());
+		comp308::vec3 momentum = parentForce*5;
 		addForce(momentum);
 	};
 	void addForce(comp308::vec3 force);

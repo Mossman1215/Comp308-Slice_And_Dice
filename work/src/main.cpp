@@ -47,7 +47,7 @@ bool g_mouseDown = false;
 vec2 g_mousePos;
 float g_yRotation = 0;
 float g_xRotation = 0;
-float g_yPosition = 0;
+float g_yPosition = -2;
 float g_zoomFactor = 4;
 
 // Mouse controlled drawing values
@@ -73,10 +73,14 @@ bool g_paused = false;
 bool g_slow = false;
 bool g_bounds = false;
 
-geometry original;
+geometry m_melon;
+geometry m_log;
+geometry m_cake;
 
 // SHADERS CODES.
-GLuint shader_code = 0;
+GLuint melon_shader = 0;
+GLuint cake_shader = 0;
+GLuint wood_shader = 0;
 
 // Sets up where and what the light is
 // Called once on start up
@@ -156,9 +160,9 @@ void draw() {
 	// Bind the texture
 
 	// Use the shader we made
-	glUseProgram(shader_code);
-	glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
-	for (unsigned int i=0;i<g_geometry.size();i++ ) {
+	glUseProgram(melon_shader);
+	glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
+	for (unsigned int i=0;i<g_geometry.size(); i++) {
 
 	    geometry Geometry = g_geometry[i];   
 	    glPushMatrix();	
@@ -197,6 +201,7 @@ void draw() {
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
+	glDisable(GL_BLEND);
 
 	glBegin(GL_QUADS);
 	glVertex3f(10, 0, 10);
@@ -207,13 +212,12 @@ void draw() {
 
 	glBegin(GL_QUADS);
 	glColor4f(0.4, 1, 0.4, 0.5);
-	glVertex3f(10000, -0.01, 10000);
-	glVertex3f(-10000, -0.01, 10000);
-	glVertex3f(-10000, -0.01, -10000);
-	glVertex3f(10000, -0.01, -10000);
+	glVertex3f(10000, -1, 10000);
+	glVertex3f(-10000, -1, 10000);
+	glVertex3f(-10000, -1, -10000);
+	glVertex3f(10000, -1, -10000);
 	glEnd();
 
-	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 
 	glColor4f(1, 0, 0, 1);
@@ -276,7 +280,7 @@ void reshape(int w, int h) {
 void reset() {
 	g_geometry.clear();
 	physics->clear();
-	geometry new_g = original;
+	geometry new_g = m_log;
 	new_g.setRigidBody();
 	g_geometry.push_back(new_g);
 }
@@ -446,9 +450,13 @@ int main(int argc, char **argv) {
 	//Create our physics and geometry
 	physics = new Physics();
 	// Finally create our geometry
-	geometry g_sphere = geometry("../work/res/assets/sphere.obj", physics);
-	original = g_sphere;
-	g_geometry.push_back(g_sphere);
+	m_melon = geometry("../work/res/assets/sphere.obj", physics);
+	m_log = geometry("../work/res/assets/TestLog.obj", physics);
+	m_cake = geometry("../work/res/assets/TestCake.obj", physics);
+	physics->clear();
+	geometry starter = m_melon;
+	starter.setRigidBody();
+	g_geometry.push_back(starter);
 
 	g_cut = new cut();
 	vector<vec3> vertex;
@@ -461,7 +469,10 @@ int main(int argc, char **argv) {
 	physics->addRigidbody(box);
 	physics->addRigidbody(box2);*/
 
-	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &shader_code);
+	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &melon_shader);
+	initShader("../work/res/shaders/cake_shader.vert", "../work/res/shaders/cake_shader.frag", &cake_shader);
+	initShader("../work/res/shaders/wood_shader.vert", "../work/res/shaders/wood_shader.frag", &wood_shader);
+	cout << melon_shader << " " << cake_shader << " " << wood_shader << endl;
 
 	// Register functions for callback
 	glutDisplayFunc(draw);
