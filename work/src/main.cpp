@@ -77,6 +77,7 @@ geometry m_melon;
 geometry m_log;
 geometry m_cake;
 int choice = 0;
+int choiceShader = 0;
 
 // SHADERS CODES.
 GLuint melon_shader = 0;
@@ -173,7 +174,7 @@ void draw() {
 	// Bind the texture
 
 	// Use the shader we made
-	switch (choice) {
+	switch (choiceShader) {
 		case 0:
 			glUseProgram(melon_shader);
 			glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
@@ -270,6 +271,11 @@ void draw() {
 	glLoadIdentity();
 	stringstream mytext;
 	mytext << "Current object count: " << physics->count() << ", Reset object set to: ";
+	switch (choice) {
+	case 0: mytext << "Melon."; break;
+	case 1: mytext << "Cake."; break;
+	case 2: mytext << "Log."; break;
+	}
 	string text = mytext.str();
 	glRasterPos2i(10, 10);  // move in 10 pixels from the left and bottom edges
 	for (int i = 0; i < text.size(); i++) {
@@ -339,6 +345,7 @@ void reset() {
 	}
 	new_g.setRigidBody();
 	g_geometry.push_back(new_g);
+	choiceShader = choice;
 }
 
 // Keyboard callback
