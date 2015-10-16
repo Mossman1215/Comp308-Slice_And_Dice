@@ -84,18 +84,6 @@ GLuint melon_shader = 0;
 GLuint cake_shader = 0;
 GLuint wood_shader = 0;
 
-// Helper method to put text on screen.
-void output(int x, int y, char* text) {
-	glColor3f(1, 1, 1);
-	glRasterPos2f(x, y);
-	int len, i;
-	len = (int)strlen(text);
-	for (i = 0; i < len; i++) {
-		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
-	}
-	glFlush();
-}
-
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -490,6 +478,8 @@ void mouseMotionCallback(int x, int y) {
 		g_mousePos = vec2(x, y);
 		g_yRotation += 0.3 * dif.x;
 		g_xRotation += 0.3 * dif.y;
+		if (g_xRotation < 0) { g_xRotation = 0; }
+		if (g_xRotation > 90) { g_xRotation = 90; }
 	}
 }
 
