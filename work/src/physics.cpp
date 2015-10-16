@@ -173,6 +173,7 @@ void Rigidbody::drawBoundingBox(bool visible){
   }
   glPopMatrix();
 }
-int physics::count(){
+
+int Physics::count(){
   return (int) objects.size();
 }
