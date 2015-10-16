@@ -76,6 +76,7 @@ bool g_bounds = false;
 geometry m_melon;
 geometry m_log;
 geometry m_cake;
+int choice = 0;
 
 // SHADERS CODES.
 GLuint melon_shader = 0;
@@ -160,8 +161,20 @@ void draw() {
 	// Bind the texture
 
 	// Use the shader we made
-	glUseProgram(melon_shader);
-	glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
+	switch (choice) {
+		case 0:
+			glUseProgram(melon_shader);
+			glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
+			break;
+		case 1:
+			glUseProgram(cake_shader);
+			glUniform1f(glGetUniformLocation(melon_shader, "radius"), 0.2);
+			break;
+		default:
+			glUseProgram(wood_shader);
+			glUniform1f(glGetUniformLocation(melon_shader, "radius"), 0.1);
+			break;
+	}
 	for (unsigned int i=0;i<g_geometry.size(); i++) {
 
 	    geometry Geometry = g_geometry[i];   
@@ -280,7 +293,15 @@ void reshape(int w, int h) {
 void reset() {
 	g_geometry.clear();
 	physics->clear();
-	geometry new_g = m_log;
+	geometry new_g;
+	switch (choice) {
+	case 0:
+		new_g = m_melon; break;
+	case 1:
+		new_g = m_cake; break;
+	default:
+		new_g = m_log; break;
+	}
 	new_g.setRigidBody();
 	g_geometry.push_back(new_g);
 }
@@ -330,7 +351,16 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	   case 'r':
 		   reset();
 		   break;
-       }
+	   case '1':
+		   choice = 0;
+		   break;
+	   case '2':
+		   choice = 1;
+		   break;
+	   case '3':
+		   choice = 2;
+		   break;
+	 }
 
 }
 
