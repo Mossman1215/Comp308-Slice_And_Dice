@@ -77,6 +77,7 @@ geometry m_melon;
 geometry m_log;
 geometry m_cake;
 int choice = 0;
+int choiceShader = 0;
 
 // SHADERS CODES.
 GLuint melon_shader = 0;
@@ -161,7 +162,7 @@ void draw() {
 	// Bind the texture
 
 	// Use the shader we made
-	switch (choice) {
+	switch (choiceShader) {
 		case 0:
 			glUseProgram(melon_shader);
 			glUniform1f(glGetUniformLocation(melon_shader, "radius"), 1.5);
@@ -188,6 +189,7 @@ void draw() {
 		glPopMatrix();
 	}
 	glUseProgram(0);
+	glEnable(GL_BLEND);
 	
 	//glPushMatrix();
 	//    vec3 position = box->update(g_delta);
@@ -204,7 +206,6 @@ void draw() {
 	//    glutSolidCube(1);
 	//glPopMatrix();
 	glDisable(GL_LIGHTING);
-	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColor4f(1, 1, 1, 0.5);
@@ -214,9 +215,9 @@ void draw() {
 	glVertex3f(cut_proj_2.x, cut_proj_2.y, cut_proj_2.z);
 	glVertex3f(cut_draw_2.x, cut_draw_2.y, cut_draw_2.z);
 	glEnd();
-	glDisable(GL_BLEND);
 
 	glBegin(GL_QUADS);
+	glColor4f(1, 1, 1, 1);
 	glVertex3f(10, 0, 10);
 	glVertex3f(-10, 0, 10);
 	glVertex3f(-10, 0, -10);
@@ -224,7 +225,7 @@ void draw() {
 	glEnd();
 
 	glBegin(GL_QUADS);
-	glColor4f(0.4, 1, 0.4, 0.5);
+	glColor4f(0.4, 1, 0.4, 1);
 	glVertex3f(10000, -1, 10000);
 	glVertex3f(-10000, -1, 10000);
 	glVertex3f(-10000, -1, -10000);
@@ -244,6 +245,35 @@ void draw() {
 	// Disable flags for cleanup (optional)
 	glDisable(GL_NORMALIZE);
 	glDisable(GL_COLOR_MATERIAL);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, 1280, 0, 1024);
+
+	glDisable(GL_BLEND);
+	// Feedback messages.
+
+	glColor4f(1, 1, 1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	stringstream mytext;
+	mytext << "Current object count: " << physics->count() << ", Reset object set to: ";
+	switch (choice) {
+	case 0: mytext << "Melon."; break;
+	case 1: mytext << "Cake."; break;
+	case 2: mytext << "Log."; break;
+	}
+	string text = mytext.str();
+	glRasterPos2i(10, 10);  // move in 10 pixels from the left and bottom edges
+	for (int i = 0; i < text.size(); i++) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
+	}
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 
 	glutSwapBuffers();
 
@@ -304,6 +334,7 @@ void reset() {
 	}
 	new_g.setRigidBody();
 	g_geometry.push_back(new_g);
+	choiceShader = choice;
 }
 
 // Keyboard callback
@@ -448,6 +479,8 @@ void mouseMotionCallback(int x, int y) {
 		g_mousePos = vec2(x, y);
 		g_yRotation += 0.3 * dif.x;
 		g_xRotation += 0.3 * dif.y;
+		if (g_xRotation < 0) { g_xRotation = 0; }
+		if (g_xRotation > 90) { g_xRotation = 90; }
 	}
 }
 
