@@ -160,7 +160,7 @@ void draw() {
 	glUniform1f(glGetUniformLocation(shader_code, "radius"), 1.5);
 	for (unsigned int i=0;i<g_geometry.size();i++ ) {
 
-	    geometry Geometry = g_geometry[i];     
+	    geometry Geometry = g_geometry[i];   
 	    glPushMatrix();	
 	    //get position from rigidbody corresponding to this geometry object
 		Rigidbody* rigid = Geometry.getRigidbody();

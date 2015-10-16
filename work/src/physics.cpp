@@ -78,6 +78,9 @@ void Physics::checkCollisions(float delta){
 	vec3 forceA;
 	forceA = c.a->position - c.b->position;
 	float r = length(forceA);
+	if (r>.01||r<-0.1) {
+		r = 1;
+	}
 	c.a->addForce(forceA/r);
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
