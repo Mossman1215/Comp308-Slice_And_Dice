@@ -109,6 +109,7 @@ public:
   Rigidbody* getRigidbody(int position);
   void clear();
   void remove(Rigidbody*);
+  int count();
 private:
 	float currentTime;
 	std::vector<Rigidbody*> objects;
