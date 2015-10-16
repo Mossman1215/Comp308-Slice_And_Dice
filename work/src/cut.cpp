@@ -17,6 +17,7 @@ vector<vec3> cutPlane;
 vector<vec3> originalPlane;
 vec3 normal;
 float planeD;
+bool samurai;
 
 /*
 Mapping geometry to rigidbody:
@@ -35,9 +36,10 @@ cut::cut() {}
 For every geometry currently in the world, cut that geometry if it intersects with the plane
 and return new geometry resulting from the cut.
 */
-vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys, Physics *p) {
+vector<geometry> cut::createCut(vector<vec3> plane, vector<geometry> geometrys, Physics *p, bool g_samurai) {
 	cutPlane = plane;
 	originalPlane = plane;
+	samurai = g_samurai;
 	int triCount = 0;
 	vector<geometry> allGeometry;
 	for (geometry g_geometry : geometrys) {
@@ -205,16 +207,24 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		bothGeometrys.push_back(geometry1);
 	}
 	else {	//Else add new rigidbody to both as this geometry has been cut
-		cout << "Rigidbody position is: " << parent->position << endl;
-		cout << "Parent Mesh position is: " << getGeometryCentre(g_geometry.getPoints()) << endl;
-		vec3 rigidBase = getGeometryCentre(geometry1.getPoints()) / 200;
-		cout << "Geometry1 Mesh position is: " << rigidBase << endl;
+		vec3 rigidBase;
+		if (samurai) {
+			rigidBase = getGeometryCentre(geometry1.getPoints()) / 200;
+		}
+		else {
+			rigidBase = getGeometryCentre(geometry1.getPoints());
+		}
 		Rigidbody *child = new Rigidbody(rigidBase + parent->position, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 
-		rigidBase = getGeometryCentre(geometry2.getPoints()) / 200;
+		if (samurai) {
+			rigidBase = getGeometryCentre(geometry2.getPoints()) / 200;
+		}
+		else {
+			rigidBase = getGeometryCentre(geometry1.getPoints());
+		}
 		cout << "Geometry2 Mesh position is: " << rigidBase << endl;
 		Rigidbody *child2 = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
 		p->addRigidbody(child2);

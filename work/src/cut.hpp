@@ -30,5 +30,5 @@ private:
 	comp308::vec3 getGeometryCentre(std::vector<comp308::vec3> points);
 public:
 	cut();
-	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry, Physics *p);
+	std::vector<geometry> createCut(std::vector<comp308::vec3> plane, std::vector<geometry> geometry, Physics *p, bool g_samurai);
 };
