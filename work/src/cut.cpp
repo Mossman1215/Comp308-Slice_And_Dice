@@ -68,8 +68,6 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 	vector<triangle> tempTriangles;
 	vector<vertex> cutVertices;
 	Rigidbody* parent = g_geometry.getRigidbody();
-	cout << "Parent position is: ";
-	cout << parent->position << endl;
 
 	//Translate plane back to vertex data
 	for (int i = 0; i < 3; i++) {
@@ -207,21 +205,20 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 		bothGeometrys.push_back(geometry1);
 	}
 	else {	//Else add new rigidbody to both as this geometry has been cut
-		cout << "Parent has: " << g_geometry.getPoints().size() << endl;
-		vec3 rigidBase = getGeometryCentre(geometry1.getPoints());
-		cout << "geometry1 has: " << geometry1.getPoints().size() << endl;
+		cout << "Rigidbody position is: " << parent->position << endl;
+		cout << "Parent Mesh position is: " << getGeometryCentre(g_geometry.getPoints()) << endl;
+		vec3 rigidBase = getGeometryCentre(geometry1.getPoints()) / 200;
+		cout << "Geometry1 Mesh position is: " << rigidBase << endl;
 		Rigidbody *child = new Rigidbody(rigidBase + parent->position, geometry1.getPoints(), 1, geometry1.getPoints().size(), parent->force);
 		p->addRigidbody(child);
-		cout  << "child1 :"<< child->position <<endl;
 		geometry1.setRigidbody(child);
 		bothGeometrys.push_back(geometry1);
 
-		rigidBase = getGeometryCentre(geometry2.getPoints());
-		cout << "geometry2 has: " << geometry2.getPoints().size() << endl;
-		child = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
-		geometry2.setRigidbody(child);
-		p->addRigidbody(child);
-		cout <<"child2 "<< child->position << endl;
+		rigidBase = getGeometryCentre(geometry2.getPoints()) / 200;
+		cout << "Geometry2 Mesh position is: " << rigidBase << endl;
+		Rigidbody *child2 = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
+		p->addRigidbody(child2);
+		geometry2.setRigidbody(child2);
 		bothGeometrys.push_back(geometry2);
 		p->remove(g_geometry.getRigidbody());
 	}
