@@ -223,7 +223,7 @@ vector<geometry> cut::cutGeometry(geometry g_geometry, Physics *p) {
 			rigidBase = getGeometryCentre(geometry2.getPoints()) / 200;
 		}
 		else {
-			rigidBase = getGeometryCentre(geometry1.getPoints());
+			rigidBase = getGeometryCentre(geometry2.getPoints());
 		}
 		cout << "Geometry2 Mesh position is: " << rigidBase << endl;
 		Rigidbody *child2 = new Rigidbody(rigidBase + parent->position, geometry2.getPoints(), 1, geometry2.getPoints().size(), parent->force);
