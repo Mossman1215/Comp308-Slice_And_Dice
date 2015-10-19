@@ -22,7 +22,7 @@
 #include "physics.hpp"
 #include "cut.hpp"
 #include <map>
-
+#include <random>
 using namespace std;
 using namespace comp308;
 
@@ -65,9 +65,8 @@ vec3 cut_proj_2;
 int g_start_time=0;
 float g_delta=0;
 vector<geometry> g_geometry;
+vector<Rigidbody*> boxes;
 cut *g_cut = nullptr;
-Rigidbody* box;
-Rigidbody* box2;
 Physics* physics;
 
 // Utility variables
@@ -85,7 +84,9 @@ int choiceShader = 0;
 GLuint melon_shader = 0;
 GLuint cake_shader = 0;
 GLuint wood_shader = 0;
-
+//random number generator for spawning boxes
+default_random_engine generator;
+uniform_real_distribution<float> distribution(-1,1);
 // Sets up where and what the light is
 // Called once on start up
 // 
@@ -192,21 +193,15 @@ void draw() {
 	}
 	glUseProgram(0);
 	glEnable(GL_BLEND);
-	
-	//glPushMatrix();
-	//    vec3 position = box->update(g_delta);
-	//glPushMatrix();
-	//    vec3 position = box->update(g_delta, g_bounds);
-	//    glTranslatef(position.x,position.y,position.z);
-	//    glColor3f(1,0,0);
-	//    glutSolidCube(1);
-	//glPopMatrix();
-	//glPushMatrix();
-	//    vec3 position2 = box2->update(g_delta, g_bounds);
-	//    glTranslatef(position2.x,position2.y,position2.z);
-	//    glColor3f(1,0,0);
-	//    glutSolidCube(1);
-	//glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+	for(Rigidbody * box : boxes){
+	  glPushMatrix();
+	   vec3 position = box->update(g_delta, g_bounds);
+	   glTranslatef(position.x,position.y,position.z);
+	   glColor3f(1,0,0);
+	   glutSolidCube(1);
+	  glPopMatrix();
+	}
 	glDisable(GL_LIGHTING);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -281,7 +276,7 @@ void draw() {
 	for (int i = 0; i < text.size(); i++) {
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
 	}
-	text = "Controls: 1, 2, 3 to switch reset models, r to reset, b to show bounds, [ to enter slowmo, x for samurai mode";
+	text = "Controls: 1, 2, 3 to switch reset models, r to reset, b to show bounds, [ to enter slowmo, x for samurai mode, 5 to add boxes";
 	glRasterPos2i(10, 10);  // move in 10 pixels from the left and bottom edges
 	for (int i = 0; i < text.size(); i++) {
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, text[i]);
@@ -338,6 +333,7 @@ void reshape(int w, int h) {
 
 void reset() {
 	g_geometry.clear();
+	boxes.clear();
 	physics->clear();
 	geometry new_g;
 	switch (choice) {
@@ -366,30 +362,44 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	}else if (key == GLUT_KEY_DOWN || key == 's') {
 		g_yPosition -= 0.03;
 	}
+	if(key == '5'){
+	  float offset = distribution(generator);
+	  float offset2 = distribution(generator);
+	  vector<vec3> vertex;
+	vertex.push_back(vec3(-.5, .5, -.5));
+	vertex.push_back(vec3(-.5, -.5, -.5));
+	vertex.push_back(vec3(.5, .5, .5));
+	vertex.push_back(vec3(.5, -.5, .5));
+	Rigidbody * box = new Rigidbody(vec3(0, 9.99, 0), vertex, 1, vertex.size(), vec3(offset, 0, offset2));
+	boxes.push_back(box);
+	  physics->addRigidbody(box);
+	}
+	
 	cout << key << " " << g_yRotation << endl;
+	if(key=='j'){
+             boxes[0]->addForce(vec3(-1,0,0));
+	}
+	if(key=='l'){
+               boxes[0]->addForce(vec3(1,0,0));
+        }
+	if(key=='n'){
+              boxes[0]->addForce(vec3(0,1,0));
+        }
+	if(key=='m'){
+               boxes[0]->addForce(vec3(0,-1,0));
+        }
+	if(key=='i'){
+               boxes[0]->addForce(vec3(0,0,-1));
+        }
+	if(key=='k'){
+               boxes[0]->addForce(vec3(0,0,1));
+	}
+
      switch(key){
 		 case ' ':
 			 g_paused = !g_paused;
 			 g_samurai = false;
 			 break;
-	   case 'j':
-             box2->addForce(vec3(-1,0,0));
-               break;
-       case 'l':
-               box2->addForce(vec3(1,0,0));
-             break;
-       case 'i':
-              box2->addForce(vec3(0,1,0));
-              break;
-       case 'k':
-               box2->addForce(vec3(0,-1,0));
-               break;
-       case 'n':
-               box2->addForce(vec3(0,0,-1));
-              break;
-       case 'm':
-               box2->addForce(vec3(0,0,1));
-			   break;
 	   case '[':
 		   g_slow = !g_slow;
 		   break;
@@ -540,21 +550,13 @@ int main(int argc, char **argv) {
 	m_log = geometry("../work/res/assets/TestLog.obj", physics);
 	m_cake = geometry("../work/res/assets/TestCake.obj", physics);
 	physics->clear();
+	boxes.clear();
 	geometry starter = m_melon;
 	starter.setRigidBody();
 	g_geometry.push_back(starter);
 
 	g_cut = new cut();
-	vector<vec3> vertex;
-	vertex.push_back(vec3(-.5, .5, -.5));
-	vertex.push_back(vec3(-.5, -.5, -.5));
-	vertex.push_back(vec3(.5, .5, .5));
-	vertex.push_back(vec3(.5, -.5, .5));
-	/*box = new Rigidbody(vec3(0, 10, 0), vertex, 1, vertex.size(), vec3(0, 0, 0));
-	box2 = new Rigidbody(vec3(.5, 20, .5), vertex, 1, vertex.size(), vec3(0, 0, 0));
-	physics->addRigidbody(box);
-	physics->addRigidbody(box2);*/
-
+	
 	initShader("../work/res/shaders/melon_shader.vert", "../work/res/shaders/melon_shader.frag", &melon_shader);
 	initShader("../work/res/shaders/cake_shader.vert", "../work/res/shaders/cake_shader.frag", &cake_shader);
 	initShader("../work/res/shaders/wood_shader.vert", "../work/res/shaders/wood_shader.frag", &wood_shader);
@@ -581,9 +583,10 @@ int main(int argc, char **argv) {
 	glutMainLoop();
 
 	// Don't forget to delete all pointers that we made
-	delete box;
-	delete box2;
 	delete physics;
 	delete g_cut;
+	for(Rigidbody* box :boxes){
+	  delete box;
+	}
 	return 0;
 }
