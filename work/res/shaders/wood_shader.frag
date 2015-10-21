@@ -26,5 +26,8 @@ void main()
 	} else {
 		base = vec4(0.9, 0.8, 0.5, 1);
 	}
+	if (choice > 4.8){
+		base = vec4(.3,0.1,0.05,1);
+	}
 	gl_FragColor = base;
 }

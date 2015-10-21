@@ -4,6 +4,7 @@ uniform float age;
 uniform float decayRate;
 uniform float height;
 varying float vDist;
+varying float vRad;
 varying vec3 vPos;
 
 void main()
@@ -27,6 +28,11 @@ void main()
 	} else {
 		base = vec4(0.9, 0.8, 0.5, 1);
 	}
-	
+	if (choice > 5.95){
+		base = vec4(0.95, 0.5, 0.7, 1);
+	}
+	if (vRad > 0.95){
+		base = vec4(0.93, 0.4, 0.6, 1);
+	}
 	gl_FragColor = base;
 }
