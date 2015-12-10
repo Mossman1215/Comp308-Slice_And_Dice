@@ -16,6 +16,7 @@ comp308::vec3 Rigidbody::update(float delta, bool bounding){
 	//change position
 	if(position.y +boundary.m_vecMin.y + (acceleration.y * delta) < 0){
 	 	this->addForce(vec3(0,-force.y,0));
+		grounded = true;
 		position = position + ((force/mass)*delta);
 		position.y = -boundary.m_vecMin.y;
 		force.x = force.x*0.9;
@@ -60,7 +61,7 @@ void Physics::checkCollisions(float delta){
       Rigidbody* rb2 = objects[j];
       if(j!=i){
           if(AABBtoAABB(rb1->boundary,rb2->boundary)){
-	     Collision c;
+	    Collision c;
 	     c.a = rb1;
 	     c.b = rb2;
 	     collisions.push_back(c);
@@ -81,11 +82,18 @@ void Physics::checkCollisions(float delta){
 	if (r>.01||r<-0.1) {
 		r = 1;
 	}
+	if( !c.a->grounded){
 	c.a->addForce(forceA*delta);
+	}else{
+	  c.a->addForce(vec3(forceA.x,0,forceA.z));
+	}
 	vec3 forceB;
 	forceB = c.b->position - c.a->position;
-	c.b->addForce(forceB*delta);
-	
+	if(!c.b->grounded){
+	 c.b->addForce(forceB*delta);
+	}else{
+	  c.b->addForce(vec3(forceB.x,0,forceB.z));
+	}
   }
   collisions.clear();
 

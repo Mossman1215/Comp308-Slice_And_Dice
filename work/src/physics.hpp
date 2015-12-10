@@ -19,7 +19,8 @@ struct TAABB
 class Rigidbody{
 public:
 	comp308::vec3 force;//sum of all forces
-	comp308::vec3 update(float, bool);
+  bool grounded =false;
+  comp308::vec3 update(float, bool);
 	void rollBack(float);
         TAABB boundary;
 	comp308::vec3 position;
