@@ -23,6 +23,9 @@
 #include "cut.hpp"
 #include <map>
 #include <random>
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 using namespace std;
 using namespace comp308;
 
@@ -470,7 +473,7 @@ void mouseCallback(int button, int state, int x, int y) {
 				//preserve momentum
 				//clear rigid body list
 				//add all the new rigidbodies post cut
-     				
+				PlaySound("../work/res/sounds/kama1.wav", NULL, SND_FILENAME | SND_ASYNC);
 			}
 			break;
 
