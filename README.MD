@@ -6,7 +6,7 @@ cmake clang or g++
 cmake work
 make
 
-#run
+# run
 cd bin
 ./Slice_n_Dice
 
